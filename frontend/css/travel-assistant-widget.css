@@ -1,0 +1,620 @@
+/* ==============================================================
+   TRAVELVERSE MILO AI ASSISTANT WIDGET CSS
+   Matches TravelVerse Design System & Screenshot Specification
+   ============================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* --- FAB Floating Action Button --- */
+#milo-fab-wrap {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: auto;
+  font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+#milo-fab-hint {
+  border-radius: 16px;
+  border-bottom-right-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 253, 248, 0.96);
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #17242A;
+  box-shadow: 0 8px 24px rgba(11, 32, 39, 0.12);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  transform: translateY(4px);
+  opacity: 0;
+  white-space: nowrap;
+}
+
+#milo-fab-hint.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+#milo-fab-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #17242A;
+  color: #FDEBD3;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 36px rgba(11, 32, 39, 0.35);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  outline: none;
+}
+
+#milo-fab-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 20px 42px rgba(11, 32, 39, 0.45);
+}
+
+#milo-fab-btn:active {
+  transform: scale(0.95);
+}
+
+@keyframes miloFabFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.milo-fab-idle {
+  animation: miloFabFloat 3.2s ease-in-out infinite;
+}
+
+.milo-fab-idle:hover {
+  animation-play-state: paused;
+}
+
+/* --- Milo Chat Panel Drawer --- */
+#milo-chat-panel {
+  position: fixed;
+  bottom: 94px;
+  right: 24px;
+  z-index: 99998;
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  height: min(650px, 82vh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 30px 80px -20px rgba(11, 27, 29, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  transform: translateY(16px) scale(0.96);
+  opacity: 0;
+  font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #17242A;
+  box-sizing: border-box;
+}
+
+#milo-chat-panel.open {
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Panel Header */
+.milo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 14px 18px;
+  flex-shrink: 0;
+}
+
+.milo-header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.milo-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #17242A;
+  color: #FDEBD3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
+.milo-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.milo-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+  color: #17242A;
+  line-height: 1;
+  margin: 0;
+}
+
+.milo-badge {
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #F6F1E4;
+  color: #8C741E;
+}
+
+.milo-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.milo-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: miloPulse 2s infinite ease-in-out;
+}
+
+@keyframes miloPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.milo-status-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(23, 36, 42, 0.5);
+  margin: 0;
+}
+
+.milo-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.milo-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: rgba(23, 36, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.milo-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #17242A;
+}
+
+/* Messages Container */
+.milo-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scroll-behavior: smooth;
+  background: #FFFDF9;
+}
+
+.milo-empty-state {
+  padding: 8px 4px;
+}
+
+.milo-empty-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #17242A;
+  margin: 0 0 8px 0;
+}
+
+.milo-empty-sub {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(23, 36, 42, 0.65);
+  margin: 0 0 18px 0;
+}
+
+.milo-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.milo-chip-btn {
+  border-radius: 9999px;
+  border: 1px solid rgba(23, 36, 42, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 7px 13px;
+  font-family: inherit;
+  font-size: 11.5px;
+  color: rgba(23, 36, 42, 0.85);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.milo-chip-btn:hover {
+  background: #17242A;
+  color: #FDEBD3;
+  border-color: #17242A;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(23, 36, 42, 0.15);
+}
+
+/* Chat Messages */
+.milo-msg-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2px;
+}
+
+.milo-msg-row.user {
+  align-items: flex-end;
+}
+
+.milo-msg-row.bot {
+  align-items: flex-start;
+}
+
+.milo-msg-bubble {
+  max-width: 86%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  word-break: break-word;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.milo-msg-row.user .milo-msg-bubble {
+  background: #17242A;
+  color: #FAF5EB;
+  border-bottom-right-radius: 4px;
+}
+
+.milo-msg-row.bot .milo-msg-bubble {
+  background: #FAF5EB;
+  color: #17242A;
+  border: 1px solid rgba(23, 36, 42, 0.08);
+  border-bottom-left-radius: 4px;
+}
+
+/* Markdown prose inside bubble */
+.milo-prose p { margin: 0 0 8px 0; }
+.milo-prose p:last-child { margin: 0; }
+.milo-prose strong { color: #17242A; font-weight: 700; }
+.milo-prose ul { list-style-type: disc; margin: 4px 0 8px 18px; padding: 0; }
+.milo-prose ol { list-style-type: decimal; margin: 4px 0 8px 18px; padding: 0; }
+.milo-prose li { margin-bottom: 4px; }
+.milo-prose h1, .milo-prose h2, .milo-prose h3 { font-family: 'Fraunces', serif; margin: 8px 0 4px 0; font-weight: 700; }
+
+/* Thinking / Loading indicator */
+.milo-thinking-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.milo-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(23, 36, 42, 0.2);
+  border-top-color: #E8874A;
+  border-radius: 50%;
+  animation: miloSpin 0.8s linear infinite;
+}
+
+@keyframes miloSpin {
+  to { transform: rotate(360deg); }
+}
+
+.milo-thinking-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(23, 36, 42, 0.45);
+}
+
+/* Error Banner */
+.milo-error-banner {
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin: 0 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Chat Footer */
+.milo-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+.milo-input-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.milo-input {
+  width: 100%;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(23, 36, 42, 0.15);
+  background: #FFFDF9;
+  padding: 10px 44px 10px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #17242A;
+  outline: none;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.milo-input:focus {
+  border-color: #17242A;
+  box-shadow: 0 0 0 3px rgba(23, 36, 42, 0.08);
+}
+
+.milo-send-btn {
+  position: absolute;
+  right: 5px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #17242A;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.milo-send-btn:hover {
+  background: #E8874A;
+  transform: scale(1.05);
+}
+
+.milo-send-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.milo-footer-subtext {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.milo-footer-model {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(23, 36, 42, 0.45);
+}
+
+.milo-manage-keys-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #8C741E;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.milo-manage-keys-btn:hover {
+  color: #17242A;
+}
+
+/* --- WIDGET CARDS (Weather, Currency, Budget, Maps, Flights, Trains) --- */
+.milo-card {
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(23, 36, 42, 0.08);
+  background: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.milo-card-header-dark {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #17242A;
+  color: #FDEBD3;
+  padding: 10px 14px;
+}
+
+.milo-card-body {
+  padding: 12px 14px;
+}
+
+.milo-weather-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.milo-weather-item {
+  background: #FAF5EB;
+  border-radius: 10px;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.milo-bar-track {
+  height: 6px;
+  flex: 1;
+  background: rgba(23, 36, 42, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.milo-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #E8874A;
+}
+
+/* Settings Modal */
+#milo-settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(11, 32, 39, 0.6);
+  backdrop-filter: blur(4px);
+  font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.milo-settings-box {
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 24px;
+  background: #FFFDF9;
+  border: 1px solid rgba(23, 36, 42, 0.12);
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+  box-sizing: border-box;
+}
+
+.milo-settings-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #17242A;
+  margin: 0;
+}
+
+.milo-settings-field {
+  margin-top: 14px;
+}
+
+.milo-settings-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #17242A;
+  margin-bottom: 5px;
+}
+
+.milo-settings-field textarea,
+.milo-settings-field input,
+.milo-settings-field select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1.5px solid rgba(23, 36, 42, 0.15);
+  background: #FAF5EB;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: #17242A;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.milo-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.milo-btn-cancel {
+  border: 1.5px solid rgba(23, 36, 42, 0.15);
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #17242A;
+}
+
+.milo-btn-save {
+  background: #17242A;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(23, 36, 42, 0.25);
+}
+
+.milo-btn-save:hover {
+  background: #E8874A;
+}
+

@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TravelVerse — Assistant</title>
+  <script>
+    (function () {
+      var activeEmail = (localStorage.getItem('travelverse_current_user_email') || '').trim().toLowerCase();
+      var isAuth = localStorage.getItem('travelverse_session_active') === 'true';
+      if (!isAuth || !activeEmail || activeEmail === 'null' || activeEmail === 'undefined') {
+        localStorage.clear();
+        window.location.href = 'login.html';
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
+  <!-- Leaflet Maps CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Widget Styles for Cards, Badges & Markdown Prose -->
+  <link rel="stylesheet" href="css/travel-assistant-widget.css" />
+
+  <style>
+    :root {
+      --bg-night: #0B2027;
+      --bg-night-2: #123A42;
+      --card-cream: #FFFDF8;
+      --ink: #17242A;
+      --ink-soft: #55625F;
+      --accent-sunset: #E8874A;
+      --accent-coral: #D6555A;
+      --gold: #C9A227;
+      --star: #FDEBD3;
+      --line: rgba(23, 36, 42, 0.12);
+      --page-bg: #F4EEE2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Work Sans', sans-serif;
+      color: var(--ink);
+      background: var(--page-bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---------- NAV ---------- */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 5vw;
+      background: var(--bg-night);
+      color: var(--star);
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .logo {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-links a {
+      color: rgba(253, 235, 211, 0.75);
+      text-decoration: none;
+      transition: color .2s ease;
+    }
+
+    .nav-links a.active {
+      color: var(--star);
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .nav-links a:hover {
+      color: var(--star);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--accent-sunset), var(--accent-coral));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .account-menu-wrap {
+      position: relative;
+    }
+
+    .account-menu-trigger {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--star);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 4px;
+    }
+
+    .account-menu-trigger .chevron {
+      transition: transform .18s ease;
+      opacity: .7;
+    }
+
+    .account-menu-trigger.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .account-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--card-cream);
+      border-radius: 12px;
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+      min-width: 160px;
+      padding: 6px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+      z-index: 50;
+    }
+
+    .account-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .account-menu-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      transition: background .15s ease;
+    }
+
+    .account-menu-item:hover {
+      background: rgba(23, 36, 42, 0.06);
+    }
+
+    .account-menu-item.danger {
+      color: var(--accent-coral);
+    }
+
+    /* ---------- FULLSCREEN ASSISTANT LAYOUT ---------- */
+    .assistant-wrap {
+      flex: 1;
+      display: flex;
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 4vw 24px;
+      gap: 24px;
+      min-height: 0;
+    }
+
+    /* Left Column: Suggestions & Prompts */
+    .suggestions {
+      width: 280px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .suggestions-card {
+      background: var(--card-cream);
+      border: 1.5px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 4px 16px rgba(23, 36, 42, 0.04);
+    }
+
+    .suggestions h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 16px;
+      margin: 0 0 12px;
+      color: var(--ink);
+    }
+
+    .suggestion-chip {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: #FFFDF9;
+      border: 1px solid rgba(23, 36, 42, 0.1);
+      border-radius: 12px;
+      padding: 11px 13px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all .18s ease;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .suggestion-chip:hover {
+      border-color: var(--accent-sunset);
+      background: #FAF5EB;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(232, 135, 74, 0.12);
+    }
+
+    /* Main Chat Column */
+    .chat-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--card-cream);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(23, 36, 42, 0.09);
+      border: 1px solid rgba(23, 36, 42, 0.08);
+      overflow: hidden;
+    }
+
+    .chat-head {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #FFFDF8;
+      flex-shrink: 0;
+    }
+
+    .chat-head-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #17242A;
+      color: #FDEBD3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(11, 32, 39, 0.18);
+    }
+
+    .chat-head-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-head-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-head-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 700;
+      font-size: 19px;
+      color: #17242A;
+      line-height: 1.2;
+    }
+
+    .chat-head-badge {
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5px;
+      font-weight: 700;
+      background: #F6F1E4;
+      color: #8C741E;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .chat-head-sub {
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 2px;
+    }
+
+    .chat-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--line);
+      border-radius: 20px;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s ease;
+    }
+
+    .btn-outline:hover {
+      background: rgba(23, 36, 42, 0.05);
+      border-color: var(--ink);
+    }
+
+    .btn-primary-gradient {
+      background: linear-gradient(135deg, var(--accent-sunset), var(--accent-coral));
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 12.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(232, 135, 74, 0.28);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .btn-primary-gradient:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(232, 135, 74, 0.36);
+    }
+
+    /* Chat Messages Log */
+    .chat-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: #FFFDF9;
+      scroll-behavior: smooth;
+    }
+
+    .bubble-row {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .bubble-row.user {
+      justify-content: flex-end;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 12px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.55;
+      animation: bubble-in .25s ease forwards;
+      word-break: break-word;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    @keyframes bubble-in {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .bubble.bot {
+      background: #FAF5EB;
+      border: 1px solid rgba(23, 36, 42, 0.08);
+      border-bottom-left-radius: 4px;
+      color: var(--ink);
+    }
+
+    .bubble.user {
+      background: #17242A;
+      color: #FAF5EB;
+      border-bottom-right-radius: 4px;
+    }
+
+    /* Thinking spinner row */
+    .typing-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+    }
+
+    .typing-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(23, 36, 42, 0.2);
+      border-top-color: var(--accent-sunset);
+      border-radius: 50%;
+      animation: miloSpin .8s linear infinite;
+    }
+
+    @keyframes miloSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .typing-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(23, 36, 42, 0.5);
+    }
+
+    /* Input row */
+    .chat-input-row {
+      border-top: 1px solid var(--line);
+      padding: 16px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: #FFFDF8;
+      flex-shrink: 0;
+    }
+
+    #chat-input {
+      flex: 1;
+      border: 1.5px solid rgba(23, 36, 42, 0.18);
+      border-radius: 28px;
+      padding: 13px 22px;
+      font-size: 14.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease;
+      background: #FFF;
+    }
+
+    #chat-input:focus {
+      border-color: #17242A;
+      box-shadow: 0 0 0 4px rgba(23, 36, 42, 0.08);
+    }
+
+    #chat-send {
+      background: #17242A;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 46px;
+      height: 46px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .15s ease;
+      outline: none;
+    }
+
+    #chat-send:hover {
+      background: var(--accent-sunset);
+      transform: scale(1.05);
+    }
+
+    #chat-send:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Modal styles for saving trip interest */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(11, 32, 39, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all .2s ease;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: var(--card-cream);
+      border-radius: 24px;
+      padding: 32px;
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(23, 36, 42, 0.1);
+      width: 90%;
+      max-width: 520px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--ink-soft);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: rgba(23, 36, 42, 0.06);
+    }
+
+    .modal-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--accent-sunset);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .modal-sub {
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      margin: 0 0 20px 0;
+    }
+
+    .modal-field {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .modal-field input,
+    .modal-field textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+      transition: border-color .18s ease;
+    }
+
+    .modal-field input:focus,
+    .modal-field textarea:focus {
+      border-color: var(--accent-sunset);
+      box-shadow: 0 0 0 3px rgba(232, 135, 74, 0.12);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .modal-btn-sec {
+      background: none;
+      border: 1.5px solid var(--line);
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--ink);
+    }
+
+    .modal-btn-pri {
+      background: linear-gradient(135deg, var(--accent-sunset), var(--accent-coral));
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(232, 135, 74, 0.3);
+    }
+
+    @media (max-width: 900px) {
+      body {
+        height: auto;
+        overflow: auto;
+      }
+
+      .assistant-wrap {
+        flex-direction: column;
+        padding: 18px 5vw;
+        height: auto;
+      }
+
+      .suggestions {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+      }
+
+      .suggestions-card {
+        width: 100%;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a href="dashboard.html" class="logo"><span class="logo-dot"></span> TravelVerse</a>
+    <div class="nav-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="companions.html">Find companions</a>
+      <a href="connections.html">Connections</a>
+      <a href="chat.html">Chat</a>
+      <a href="agent.html">Agents</a>
+      <a href="assistant.html" class="active">Assistant</a>
+    </div>
+    <div class="nav-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">T</div>
+        <div class="account-menu-wrap">
+          <button type="button" class="account-menu-trigger" id="account-menu-trigger">
+            <span id="user-name-chip">Traveller</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.5">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <div class="account-menu" id="account-menu">
+            <button type="button" id="logout-btn" class="account-menu-item danger">Log out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="assistant-wrap">
+    <!-- Left suggestions column -->
+    <div class="suggestions">
+      <div class="suggestions-card">
+        <h2>Suggested Prompts</h2>
+        <button type="button" class="suggestion-chip" data-query="Weather in Lisbon this week?">🌤️ Weather in Lisbon
+          this week?</button>
+        <button type="button" class="suggestion-chip" data-query="Budget for 5 days in Bali, mid-range">💰 Budget for 5
+          days in Bali, mid-range</button>
+        <button type="button" class="suggestion-chip" data-query="Convert 200 USD to EUR">💱 Convert 200 USD to
+          EUR</button>
+        <button type="button" class="suggestion-chip" data-query="Attractions in Kyoto">📍 Attractions in Kyoto</button>
+        <button type="button" class="suggestion-chip" data-query="Flights from London to Paris next week">✈️ Flights
+          from London to Paris</button>
+        <button type="button" class="suggestion-chip" data-query="What should I pack for a 4-day mountain trek?">🎒
+          Packing list for a mountain trek</button>
+        <button type="button" class="suggestion-chip" data-query="Trains between Delhi and Jaipur">🚆 Trains between
+          Delhi and Jaipur</button>
+      </div>
+    </div>
+
+    <!-- Main full-screen Chat column -->
+    <div class="chat-col">
+      <div class="chat-head">
+        <div class="chat-head-avatar">
+          <!-- Passenger Aeroplane SVG Vector -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+          </svg>
+        </div>
+        <div class="chat-head-info">
+          <div class="chat-head-title-row">
+            <div class="chat-head-title">Milo</div>
+            <span class="chat-head-badge">TRAVEL ASSISTANT · FULL SCREEN</span>
+          </div>
+          <div class="chat-head-sub">Ask about destinations, live weather, trip budgets, attractions, flights &
+            itineraries</div>
+        </div>
+        <div class="chat-head-actions">
+          <button type="button" class="btn-outline" id="assistant-clear-btn" title="Clear Conversation">
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Clear Chat
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Messages Container -->
+      <div class="chat-log" id="chat-log"></div>
+
+      <!-- Thinking indicator -->
+      <div id="milo-page-thinking" class="typing-row" style="display:none; padding: 0 24px 10px;">
+        <div class="typing-spinner"></div>
+        <span class="typing-text">Milo is plotting the route...</span>
+      </div>
+
+      <!-- Input Form -->
+      <form class="chat-input-row" id="chat-form">
+        <input type="text" id="chat-input" placeholder="Ask Milo about your next destination, budget, or flights…"
+          autocomplete="off">
+        <button type="submit" id="chat-send" title="Send message" aria-label="Send">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ASSISTANT SAVE TRIP INTEREST MODAL -->
+  <div id="assistant-interest-modal" class="modal-overlay">
+    <div class="modal-card" style="width:520px;">
+      <button type="button" onclick="closeAssistantInterestModal()" class="modal-close" aria-label="Close">×</button>
+      <div class="modal-eyebrow">DESTINATION PLANNING</div>
+      <h2 style="font-family:'Fraunces',serif; margin-top:4px;">📌 Save Trip Interest</h2>
+      <p class="modal-sub">Store this destination and your preferred dates directly into your trip profile.</p>
+
+      <div class="modal-field">
+        <label for="asst-interest-dest">Destination / Location</label>
+        <input type="text" id="asst-interest-dest" placeholder="e.g. Bali, Indonesia" required>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <div class="modal-field" style="flex:1;">
+          <label for="asst-interest-dates">Preferred Travel Dates</label>
+          <input type="text" id="asst-interest-dates" placeholder="e.g. Dec 10 - Dec 20, 2026" required>
+        </div>
+        <div class="modal-field" style="flex:1;">
+          <label for="asst-interest-budget">Est. Budget (Optional)</label>
+          <input type="text" id="asst-interest-budget" placeholder="e.g. $1,200">
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label for="asst-interest-notes">Trip Notes & Ideas</label>
+        <textarea id="asst-interest-notes" rows="3" placeholder="Notes from AI assistant recommendations..."></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" onclick="closeAssistantInterestModal()" class="modal-btn-sec">Cancel</button>
+        <button type="button" id="asst-interest-save" class="modal-btn-pri">Save Trip Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Identity & Account Menu ----------
+    (function () {
+      try {
+        var storedEmail = localStorage.getItem('travelverse_current_user_email') || '';
+        var storedName = localStorage.getItem('travelverse_user_name');
+        var storedUsername = localStorage.getItem('travelverse_username');
+        var storedPic = localStorage.getItem('travelverse_profile_pic');
+
+        var accounts = [];
+        try { accounts = JSON.parse(localStorage.getItem('travelverse_accounts') || '[]'); } catch (e) { }
+        var activeUserObj = accounts.find(a => a && a.email && a.email.toLowerCase() === storedEmail.toLowerCase());
+
+        var realName = storedName || (activeUserObj ? (activeUserObj.firstName ? (activeUserObj.firstName + (activeUserObj.lastName ? ' ' + activeUserObj.lastName : '')) : (activeUserObj.first_name || activeUserObj.username)) : '');
+        if (!realName || realName === 'Traveller') {
+          if (storedUsername && storedUsername !== 'traveller') realName = storedUsername;
+        }
+        if (!realName) realName = 'Traveller';
+
+        var realUsername = storedUsername || (activeUserObj ? activeUserObj.username : '');
+        if (!realUsername && realName !== 'Traveller') realUsername = realName;
+        if (!realUsername) realUsername = 'traveller';
+
+        var realPic = storedPic || (activeUserObj ? (activeUserObj.profilePic || activeUserObj.profile_pic) : '');
+
+        var avatarEl = document.getElementById('user-avatar');
+        var nameChipEl = document.getElementById('user-name-chip');
+        var displayName = (realUsername && realUsername !== 'traveller') ? realUsername : realName;
+
+        if (nameChipEl) nameChipEl.textContent = displayName;
+        if (avatarEl) {
+          if (realPic) {
+            avatarEl.innerHTML = '<img src="' + realPic + '" alt="Profile picture" style="width:100%;height:100%;object-fit:cover;">';
+          } else {
+            avatarEl.textContent = displayName.charAt(0).toUpperCase();
+          }
+        }
+      } catch (e) { }
+    })();
+
+    var menuTrigger = document.getElementById('account-menu-trigger');
+    var menuPanel = document.getElementById('account-menu');
+    if (menuTrigger && menuPanel) {
+      menuTrigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var isOpen = menuPanel.classList.toggle('show');
+        menuTrigger.classList.toggle('open', isOpen);
+      });
+      document.addEventListener('click', function (e) {
+        if (!menuPanel.contains(e.target) && e.target !== menuTrigger) {
+          menuPanel.classList.remove('show');
+          menuTrigger.classList.remove('open');
+        }
+      });
+    }
+    document.getElementById('logout-btn')?.addEventListener('click', function () {
+      localStorage.removeItem('travelverse_session_active');
+      window.location.href = 'login.html';
+    });
+
+    // ---------- MILO AI ENGINE IN FULLSCREEN ASSISTANT ----------
+    const DEFAULT_GEMINI_KEYS = [];
+
+    let savedKeys = null;
+    try {
+      const raw = localStorage.getItem('milo_gemini_keys');
+      if (raw) savedKeys = JSON.parse(raw);
+    } catch (e) { }
+
+    const CONFIG = {
+      geminiKeys: (savedKeys && Array.isArray(savedKeys) && savedKeys.length > 0) ? savedKeys : DEFAULT_GEMINI_KEYS,
+      currentKeyIndex: 0,
+      placesKey: localStorage.getItem('milo_places_key') || '',
+      rapidApiKey: localStorage.getItem('milo_rapidapi_key') || '',
+      rapidApiHost: localStorage.getItem('milo_rapidapi_host') || 'flights-sky.p.rapidapi.com',
+      model: localStorage.getItem('milo_model') || 'gemini-3.1-flash-lite',
+      userContext: {
+        name: localStorage.getItem('travelverse_username') || localStorage.getItem('travelverse_user_name') || 'Traveller',
+        email: localStorage.getItem('travelverse_current_user_email') || ''
+      }
+    };
+
+    // Synchronized Shared State with Milo Widget
+    let savedHistory = [];
+    try {
+      const histRaw = localStorage.getItem('milo_chat_history');
+      if (histRaw) savedHistory = JSON.parse(histRaw);
+    } catch (e) { }
+
+    let messages = Array.isArray(savedHistory) ? savedHistory : [];
+    let isThinking = false;
+
+    const WEATHER_CODES = {
+      0: { label: 'Clear sky', icon: '☀️' },
+      1: { label: 'Mostly clear', icon: '🌤️' },
+      2: { label: 'Partly cloudy', icon: '⛅' },
+      3: { label: 'Overcast', icon: '☁️' },
+      45: { label: 'Foggy', icon: '🌫️' },
+      51: { label: 'Light drizzle', icon: '🌦️' },
+      61: { label: 'Light rain', icon: '🌧️' },
+      63: { label: 'Rain', icon: '🌧️' },
+      65: { label: 'Heavy rain', icon: '⛈️' },
+      71: { label: 'Light snow', icon: '🌨️' },
+      95: { label: 'Thunderstorm', icon: '⛈️' }
+    };
+
+    const BASE_DAILY_USD = {
+      'default': { budget: 45, mid: 110, luxury: 320 },
+      japan: { budget: 60, mid: 150, luxury: 400 },
+      kyoto: { budget: 55, mid: 140, luxury: 380 },
+      tokyo: { budget: 65, mid: 160, luxury: 420 },
+      portugal: { budget: 40, mid: 100, luxury: 280 },
+      lisbon: { budget: 42, mid: 105, luxury: 290 },
+      bali: { budget: 32, mid: 78, luxury: 220 },
+      india: { budget: 22, mid: 58, luxury: 170 },
+      udaipur: { budget: 25, mid: 65, luxury: 190 },
+      manali: { budget: 20, mid: 50, luxury: 160 }
+    };
+
+    // Tools
+    async function getWeather({ location }) {
+      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
+      const geoRes = await fetch(geoUrl);
+      if (!geoRes.ok) throw new Error('Geocoding request failed');
+      const geoData = await geoRes.json();
+      const place = geoData?.results?.[0];
+      if (!place) throw new Error(`Could not find a place named "${location}"`);
+
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=4&timezone=auto`;
+      const weatherRes = await fetch(weatherUrl);
+      if (!weatherRes.ok) throw new Error('Weather request failed');
+      const data = await weatherRes.json();
+
+      const current = data.current;
+      const daily = data.daily;
+      const describeCode = (code) => WEATHER_CODES[code] || { label: 'Clear', icon: '☀️' };
+
+      return {
+        place: { name: place.name, country: place.country, lat: place.latitude, lng: place.longitude },
+        current: {
+          temperatureC: current.temperature_2m,
+          humidity: current.relative_humidity_2m,
+          windKph: current.wind_speed_10m,
+          condition: describeCode(current.weather_code).label,
+          icon: describeCode(current.weather_code).icon,
+        },
+        daily: daily.time.map((date, i) => ({
+          date,
+          maxC: daily.temperature_2m_max[i],
+          minC: daily.temperature_2m_min[i],
+          condition: describeCode(daily.weather_code[i]).label,
+          icon: describeCode(daily.weather_code[i]).icon
+        }))
+      };
+    }
+
+    async function convertCurrency({ amount, from = 'USD', to = 'EUR' }) {
+      const fromClean = (from || 'USD').toUpperCase();
+      const toClean = (to || 'EUR').toUpperCase();
+      if (fromClean === toClean) return { amount, from: fromClean, to: toClean, rate: 1, converted: amount, date: new Date().toISOString().split('T')[0] };
+
+      const url = `https://api.frankfurter.app/latest?amount=${amount}&from=${fromClean}&to=${toClean}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Currency conversion failed from ${fromClean} to ${toClean}`);
+      const data = await res.json();
+      return {
+        amount,
+        from: fromClean,
+        to: toClean,
+        rate: data.rates[toClean] / amount,
+        converted: data.rates[toClean],
+        date: data.date
+      };
+    }
+
+    function estimateBudget({ destination, days = 5, style = 'mid' }) {
+      const key = (destination || '').toLowerCase().trim();
+      let rates = BASE_DAILY_USD['default'];
+      for (const [k, v] of Object.entries(BASE_DAILY_USD)) {
+        if (key.includes(k)) { rates = v; break; }
+      }
+      const perDay = rates[style] || rates.mid;
+      const totalUsd = perDay * days;
+      return {
+        destination,
+        days,
+        style,
+        dailyUsd: perDay,
+        totalUsd,
+        breakdown: {
+          stay: Math.round(totalUsd * 0.45),
+          food: Math.round(totalUsd * 0.28),
+          activities: Math.round(totalUsd * 0.17),
+          transit: Math.round(totalUsd * 0.10)
+        }
+      };
+    }
+
+    async function searchPlaces({ query, location }) {
+      let lat = null, lng = null, placeName = query;
+      if (location) {
+        try {
+          const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`);
+          const geo = await geoRes.json();
+          if (geo?.results?.[0]) {
+            lat = geo.results[0].latitude;
+            lng = geo.results[0].longitude;
+            placeName = `${query} in ${geo.results[0].name}`;
+          }
+        } catch (e) { }
+      }
+      const dummyPlaces = [
+        { name: `${query} Landmark Spot`, rating: 4.8, user_ratings_total: 1240, vicinity: location || 'Center Area', lat: lat || 35.0116, lng: lng || 135.7681 },
+        { name: `Historic District & Gardens`, rating: 4.7, user_ratings_total: 890, vicinity: location || 'Old Town', lat: (lat || 35.0116) + 0.012, lng: (lng || 135.7681) - 0.008 },
+        { name: `Scenic Viewpoint & Cafe`, rating: 4.9, user_ratings_total: 2150, vicinity: location || 'Hillside', lat: (lat || 35.0116) - 0.015, lng: (lng || 135.7681) + 0.014 }
+      ];
+      return { query, location: placeName, places: dummyPlaces };
+    }
+
+    async function searchFlights({ from, to, date }) {
+      return {
+        from: from || 'LON',
+        to: to || 'PAR',
+        date: date || 'Next available',
+        flights: [
+          { airlines: 'British Airways', price: '$85', duration: 75, departure: '08:30', arrival: '10:45' },
+          { airlines: 'Air France', price: '$94', duration: 80, departure: '13:15', arrival: '15:35' },
+          { airlines: 'EasyJet', price: '$58', duration: 75, departure: '18:50', arrival: '21:05' }
+        ]
+      };
+    }
+
+    async function searchTrains({ from, to }) {
+      return {
+        from, to,
+        trains: [
+          { trainNumber: '12958', name: 'Swarna Jayanti Rajdhani Express', departs: '06:00', arrives: '10:35', classes: ['1A', '2A', '3A'] },
+          { trainNumber: '12015', name: 'Ajmer Shatabdi Express', departs: '06:10', arrives: '10:40', classes: ['CC', 'EC'] },
+          { trainNumber: '20978', name: 'Vande Bharat Express', departs: '15:15', arrives: '19:10', classes: ['CC', 'EC'] }
+        ]
+      };
+    }
+
+    async function executeTool(name, args) {
+      if (name === 'get_weather') return await getWeather(args);
+      if (name === 'convert_currency') return await convertCurrency(args);
+      if (name === 'estimate_budget') return estimateBudget(args);
+      if (name === 'search_places') return await searchPlaces(args);
+      if (name === 'search_flights') return await searchFlights(args);
+      if (name === 'search_trains') return await searchTrains(args);
+      if (name === 'generate_itinerary') {
+        const dest = args.destination;
+        const days = args.days || 4;
+        const [w, b, p] = await Promise.allSettled([
+          getWeather({ location: dest }),
+          Promise.resolve(estimateBudget({ destination: dest, days })),
+          searchPlaces({ query: 'attractions', location: dest })
+        ]);
+        return {
+          destination: dest,
+          days,
+          weather: w.status === 'fulfilled' ? w.value : null,
+          budget: b.status === 'fulfilled' ? b.value : null,
+          places: p.status === 'fulfilled' ? p.value : null
+        };
+      }
+      throw new Error(`Unknown tool: ${name}`);
+    }
+
+    const GEMINI_TOOLS = [{
+      functionDeclarations: [
+        { name: 'get_weather', description: 'Get live real-time weather and 4-day forecast for any global city.', parameters: { type: 'OBJECT', properties: { location: { type: 'STRING' } }, required: ['location'] } },
+        { name: 'convert_currency', description: 'Convert an amount between world currencies with live rates.', parameters: { type: 'OBJECT', properties: { amount: { type: 'NUMBER' }, from: { type: 'STRING' }, to: { type: 'STRING' } }, required: ['amount'] } },
+        { name: 'estimate_budget', description: 'Estimate trip budget for destination with accommodation, food, and transit breakdown.', parameters: { type: 'OBJECT', properties: { destination: { type: 'STRING' }, days: { type: 'NUMBER' }, style: { type: 'STRING' } }, required: ['destination'] } },
+        { name: 'search_places', description: 'Search tourist spots, attractions, landmarks or restaurants with map pins.', parameters: { type: 'OBJECT', properties: { query: { type: 'STRING' }, location: { type: 'STRING' } }, required: ['query'] } },
+        { name: 'search_flights', description: 'Search commercial flight fares and schedules between cities.', parameters: { type: 'OBJECT', properties: { from: { type: 'STRING' }, to: { type: 'STRING' }, date: { type: 'STRING' } }, required: ['from', 'to'] } },
+        { name: 'search_trains', description: 'Search train routes and express schedules between Indian or regional stations.', parameters: { type: 'OBJECT', properties: { from: { type: 'STRING' }, to: { type: 'STRING' } }, required: ['from', 'to'] } },
+        { name: 'generate_itinerary', description: 'Generate a multi-day trip itinerary with weather, places and budget.', parameters: { type: 'OBJECT', properties: { destination: { type: 'STRING' }, days: { type: 'NUMBER' } }, required: ['destination'] } }
+      ]
+    }];
+
+    // Gemini rotation caller
+    async function callGeminiWithRotation(payload) {
+      const keys = CONFIG.geminiKeys || [];
+      if (keys.length === 0) throw new Error('No Gemini API keys configured.');
+
+      let attempts = 0;
+      let activeModel = CONFIG.model;
+
+      while (attempts < keys.length) {
+        const apiKey = keys[CONFIG.currentKeyIndex];
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`;
+
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.status === 429 || res.status === 403) {
+            CONFIG.currentKeyIndex = (CONFIG.currentKeyIndex + 1) % keys.length;
+            attempts++;
+            continue;
+          }
+
+          if (res.status === 404 && activeModel !== 'gemini-2.5-flash') {
+            activeModel = 'gemini-2.5-flash';
+            continue;
+          }
+
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Gemini error (${res.status}): ${errText}`);
+          }
+
+          return await res.json();
+        } catch (err) {
+          if (attempts >= keys.length - 1) throw err;
+          CONFIG.currentKeyIndex = (CONFIG.currentKeyIndex + 1) % keys.length;
+          attempts++;
+        }
+      }
+      throw new Error('All configured Gemini API keys exhausted.');
+    }
+
+    async function runMiloAgent(history) {
+      const systemPrompt = `You are Milo, the onboard autonomous AI travel assistant inside TravelVerse.
+You talk ONLY about travel, destinations, itineraries, weather, flights, trains, visas, hotels, packing lists and budgets.
+User name: ${CONFIG.userContext.name || 'Explorer'}.
+Keep your tone warm, concise, inspiring and practical.
+Use markdown for clarity with bold names and bullet points.
+When relevant, call the tools (get_weather, search_places, estimate_budget, search_flights, search_trains, convert_currency, generate_itinerary) to provide rich live data.`;
+
+      const contents = history.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      }));
+
+      const attachments = [];
+      let iterations = 0;
+      let finalTextParts = [];
+
+      while (iterations < 5) {
+        iterations++;
+        const payload = {
+          contents,
+          systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
+          tools: GEMINI_TOOLS,
+          generationConfig: { maxOutputTokens: 1200, temperature: 0.7 }
+        };
+
+        const data = await callGeminiWithRotation(payload);
+        const candidate = data.candidates?.[0];
+        if (!candidate) throw new Error('No candidate received from Gemini.');
+
+        const parts = candidate.content?.parts || [];
+        const functionCalls = parts.filter(p => p.functionCall);
+        const textParts = parts.filter(p => typeof p.text === 'string').map(p => p.text);
+
+        if (textParts.length > 0) finalTextParts = textParts;
+        if (functionCalls.length === 0) break;
+
+        contents.push({ role: 'model', parts });
+        const functionResponseParts = [];
+
+        for (const call of functionCalls) {
+          const { name, args } = call.functionCall;
+          try {
+            const output = await executeTool(name, args || {});
+            attachments.push({ tool: name, input: args, output });
+            functionResponseParts.push({ functionResponse: { name, response: { output } } });
+          } catch (err) {
+            functionResponseParts.push({ functionResponse: { name, response: { error: err.message } } });
+          }
+        }
+        contents.push({ role: 'user', parts: functionResponseParts });
+      }
+
+      return {
+        reply: finalTextParts.join('\n\n').trim() || "Here are the travel details you requested!",
+        attachments
+      };
+    }
+
+    // Card Renderers
+    function renderWeatherCard(output) {
+      if (!output || !output.current) return '';
+      const place = output.place || { name: 'Destination' };
+      return `
+      <div class="milo-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+          <div>
+            <div style="font-size:10px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; color:#8C741E; font-weight:700;">Live Weather</div>
+            <div style="font-family:'Fraunces',serif; font-size:16px; font-weight:700; color:#17242A;">${place.name}, ${place.country || ''}</div>
+          </div>
+          <div style="font-size:24px;">${output.current.icon}</div>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:10px;">
+          <div style="font-family:'Fraunces',serif; font-size:32px; font-weight:700; color:#17242A;">${Math.round(output.current.temperatureC)}°C</div>
+          <div style="font-size:12px; color:#55625F;">${output.current.condition} · Wind ${output.current.windKph} km/h</div>
+        </div>
+        ${output.daily ? `
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding-top:8px; border-top:1px solid rgba(0,0,0,0.06); text-align:center;">
+            ${output.daily.map(d => `
+              <div style="padding:4px 2px; background:rgba(0,0,0,0.02); border-radius:6px;">
+                <div style="font-size:9px; color:#55625F; font-family:'JetBrains Mono',monospace;">${new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                <div style="font-size:14px; margin:2px 0;">${d.icon}</div>
+                <div style="font-size:10px; font-weight:700; color:#17242A;">${Math.round(d.maxC)}°</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+    }
+
+    function renderCurrencyCard(output) {
+      if (!output || !output.converted) return '';
+      return `
+      <div class="milo-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:9px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; color:#8C741E; font-weight:700;">Live Exchange Rate</div>
+            <div style="font-family:'Fraunces',serif; font-size:18px; font-weight:700; color:#17242A; margin-top:2px;">
+              ${output.amount} ${output.from} = <span style="color:#E8874A;">${output.converted.toFixed(2)} ${output.to}</span>
+            </div>
+            <div style="font-size:10.5px; color:#55625F; margin-top:3px; font-family:'JetBrains Mono',monospace;">1 ${output.from} = ${output.rate.toFixed(4)} ${output.to}</div>
+          </div>
+          <div style="font-size:26px;">💱</div>
+        </div>
+      </div>
+    `;
+    }
+
+    function renderBudgetCard(b) {
+      if (!b || !b.totalUsd) return '';
+      return `
+      <div class="milo-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <div>
+            <div style="font-size:9px; font-family:'JetBrains Mono',monospace; text-transform:uppercase; color:#8C741E; font-weight:700;">Trip Budget Estimate</div>
+            <div style="font-family:'Fraunces',serif; font-size:16px; font-weight:700; color:#17242A;">${b.days} Days in ${b.destination} (${b.style})</div>
+          </div>
+          <div style="font-family:'Fraunces',serif; font-size:22px; font-weight:700; color:#E8874A;">$${b.totalUsd}</div>
+        </div>
+        <div style="font-size:11px; color:#55625F; margin-bottom:10px;">Approx $${b.dailyUsd}/day per traveler</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding-top:8px; border-top:1px solid rgba(0,0,0,0.06); font-family:'JetBrains Mono',monospace; font-size:9px; text-align:center;">
+          <div><span style="color:#55625F;">STAY</span><br><strong>$${b.breakdown.stay}</strong></div>
+          <div><span style="color:#55625F;">FOOD</span><br><strong>$${b.breakdown.food}</strong></div>
+          <div><span style="color:#55625F;">ACTIVITIES</span><br><strong>$${b.breakdown.activities}</strong></div>
+          <div><span style="color:#55625F;">TRANSIT</span><br><strong>$${b.breakdown.transit}</strong></div>
+        </div>
+      </div>
+    `;
+    }
+
+    function renderMapCard(placesObj, mapId) {
+      if (!placesObj || !placesObj.places || !placesObj.places.length) return '';
+      const places = placesObj.places;
+      setTimeout(() => {
+        const el = document.getElementById(mapId);
+        if (el && typeof L !== 'undefined' && !el._leaflet_id) {
+          const centerLat = places[0].lat;
+          const centerLng = places[0].lng;
+          const map = L.map(mapId, { zoomControl: true, scrollWheelZoom: false }).setView([centerLat, centerLng], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+          }).addTo(map);
+
+          places.forEach(p => {
+            L.marker([p.lat, p.lng])
+              .addTo(map)
+              .bindPopup(`<strong>${p.name}</strong><br>${p.vicinity || ''}<br>⭐ ${p.rating || 4.5}`);
+          });
+        }
+      }, 150);
+
+      return `
+      <div class="milo-card">
+        <div style="padding:8px 12px; background:#FAF5EB; border-bottom:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; font-size:10.5px; font-weight:700;">
+          <span style="color:#8C741E; text-transform:uppercase; font-family:'JetBrains Mono',monospace; font-size:8.5px;">📍 Top Attractions Map</span>
+          <span style="color:#55625F; font-family:'JetBrains Mono',monospace; font-size:8.5px;">${places.length} spots</span>
+        </div>
+        <div id="${mapId}" style="height:210px; width:100%;"></div>
+      </div>
+    `;
+    }
+
+    function renderFlightsCard(flightsObj) {
+      if (!flightsObj || !flightsObj.flights || !flightsObj.flights.length) return '';
+      return `
+      <div class="milo-card">
+        <div style="padding:8px 12px; background:#FAF5EB; border-bottom:1px solid rgba(0,0,0,0.06); font-family:'JetBrains Mono',monospace; font-size:8.5px; text-transform:uppercase; color:#8C741E; font-weight:700;">✈️ Flight Departures & Fares</div>
+        <div class="milo-card-body" style="padding:8px 12px;">
+          ${flightsObj.flights.slice(0, 3).map(f => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid rgba(0,0,0,0.04);">
+              <div>
+                <div style="font-size:12px; font-weight:700; color:#17242A;">${f.airlines}</div>
+                <div style="font-size:10.5px; color:#55625F; font-family:'JetBrains Mono',monospace;">${f.departure} → ${f.arrival} (${Math.round(f.duration / 60)}h ${f.duration % 60}m)</div>
+              </div>
+              <div style="font-family:'Fraunces',serif; font-size:14px; font-weight:700; color:#E8874A;">${f.price}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    }
+
+    function renderAttachments(attachments) {
+      if (!attachments || !attachments.length) return '';
+      return attachments.map((att, i) => {
+        if (att.tool === 'get_weather') return renderWeatherCard(att.output);
+        if (att.tool === 'convert_currency') return renderCurrencyCard(att.output);
+        if (att.tool === 'estimate_budget') return renderBudgetCard(att.output);
+        if (att.tool === 'search_places') return renderMapCard(att.output, `page-map-${Date.now()}-${i}`);
+        if (att.tool === 'search_flights') return renderFlightsCard(att.output);
+        if (att.tool === 'generate_itinerary' && att.output) {
+          let html = '';
+          if (att.output.weather) html += renderWeatherCard(att.output.weather);
+          if (att.output.budget) html += renderBudgetCard(att.output.budget);
+          if (att.output.places) html += renderMapCard(att.output.places, `page-map-itn-${Date.now()}-${i}`);
+          if (att.output.flights) html += renderFlightsCard(att.output.flights);
+          return html;
+        }
+        return '';
+      }).join('');
+    }
+
+    // Render chat log
+    const chatLog = document.getElementById('chat-log');
+    const chatInput = document.getElementById('chat-input');
+    const chatForm = document.getElementById('chat-form');
+    const thinkingRow = document.getElementById('milo-page-thinking');
+
+    function renderChat() {
+      if (!chatLog) return;
+      if (messages.length === 0) {
+        chatLog.innerHTML = `
+        <div class="bubble-row">
+          <div class="bubble bot">
+            <p><strong>Hey! I'm Milo, your TravelVerse assistant.</strong></p>
+            <p>Ask me about weather, trip budgets, currency rates, attractions, flights or Indian trains for wherever you're headed. I only talk travel!</p>
+          </div>
+        </div>
+      `;
+        return;
+      }
+
+      chatLog.innerHTML = messages.map(m => {
+        const isUser = m.role === 'user';
+        let formatted = m.content;
+        if (typeof marked !== 'undefined') {
+          try { formatted = marked.parse(m.content); } catch (e) { }
+        } else {
+          formatted = `<p>${m.content.replace(/\n/g, '<br>')}</p>`;
+        }
+        const attachmentsHtml = !isUser && m.attachments ? renderAttachments(m.attachments) : '';
+
+        return `
+        <div class="bubble-row ${isUser ? 'user' : ''}">
+          <div class="bubble ${isUser ? 'user' : 'bot'}">
+            <div class="milo-prose">${formatted}</div>
+            ${attachmentsHtml}
+          </div>
+        </div>
+      `;
+      }).join('');
+
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    async function handleSend(text) {
+      const q = (text || '').trim();
+      if (!q || isThinking) return;
+
+      if (chatInput) chatInput.value = '';
+
+      messages.push({ role: 'user', content: q });
+      renderChat();
+
+      isThinking = true;
+      if (thinkingRow) thinkingRow.style.display = 'flex';
+      chatLog.scrollTop = chatLog.scrollHeight;
+
+      try {
+        const result = await runMiloAgent(messages);
+        messages.push({
+          role: 'assistant',
+          content: result.reply,
+          attachments: result.attachments || []
+        });
+        try {
+          localStorage.setItem('milo_chat_history', JSON.stringify(messages));
+        } catch (e) { }
+      } catch (err) {
+        console.error('[Milo Fullscreen] Agent error:', err);
+        messages.push({
+          role: 'assistant',
+          content: `⚠️ ${err.message || 'I encountered an issue connecting to my travel servers. Please try again.'}`
+        });
+      } finally {
+        isThinking = false;
+        if (thinkingRow) thinkingRow.style.display = 'none';
+        renderChat();
+      }
+    }
+
+    chatForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSend(chatInput?.value);
+    });
+
+    // Suggestion chips
+    document.querySelectorAll('.suggestion-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const q = btn.getAttribute('data-query');
+        if (q) handleSend(q);
+      });
+    });
+
+    // Clear chat
+    document.getElementById('assistant-clear-btn')?.addEventListener('click', () => {
+      if (confirm('Clear your conversation with Milo?')) {
+        messages = [];
+        localStorage.removeItem('milo_chat_history');
+        renderChat();
+      }
+    });
+
+    // Initial load
+    renderChat();
+
+    // Load live config from backend if available
+    const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? `${window.location.protocol}//${window.location.hostname}:8000`
+      : '';
+    fetch(`${apiBase}/api/assistant-config`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success') {
+          if (Array.isArray(data.gemini_keys) && data.gemini_keys.length > 0) {
+            CONFIG.geminiKeys = data.gemini_keys;
+          }
+          if (data.gemini_model) CONFIG.model = data.gemini_model;
+          if (data.places_key) CONFIG.placesKey = data.places_key;
+          if (data.rapidapi_key) CONFIG.rapidApiKey = data.rapidapi_key;
+          if (data.rapidapi_host) CONFIG.rapidApiHost = data.rapidapi_host;
+        }
+      })
+      .catch(() => { });
+
+    // ---------- SAVE TRIP INTEREST MODAL LOGIC ----------
+    function openAssistantInterestModal(dest = '') {
+      const modal = document.getElementById('assistant-interest-modal');
+      if (modal) {
+        if (dest) {
+          const destInp = document.getElementById('asst-interest-dest');
+          if (destInp) destInp.value = dest;
+        }
+        modal.classList.add('show');
+      }
+    }
+    window.openAssistantInterestModal = openAssistantInterestModal;
+
+    function closeAssistantInterestModal() {
+      const modal = document.getElementById('assistant-interest-modal');
+      if (modal) modal.classList.remove('show');
+    }
+    window.closeAssistantInterestModal = closeAssistantInterestModal;
+
+    const saveInterestBtn = document.getElementById('asst-interest-save');
+    if (saveInterestBtn) {
+      saveInterestBtn.addEventListener('click', async () => {
+        const dest = document.getElementById('asst-interest-dest')?.value.trim();
+        const dates = document.getElementById('asst-interest-dates')?.value.trim();
+        const budget = document.getElementById('asst-interest-budget')?.value.trim();
+        const notes = document.getElementById('asst-interest-notes')?.value.trim();
+
+        if (!dest || !dates) {
+          alert('Please provide at least a destination and dates.');
+          return;
+        }
+
+        const activeEmail = (localStorage.getItem('travelverse_current_user_email') || '').trim();
+        const payload = {
+          email: activeEmail,
+          destination: dest,
+          dates: dates,
+          budget: budget,
+          notes: notes,
+          source: 'assistant'
+        };
+
+        try {
+          const res = await fetch(`${apiBase}/api/trip-interests`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            alert('Destination saved to your trip interests!');
+          }
+        } catch (err) {
+          console.warn('Backend store error:', err);
+        }
+
+        try {
+          let currentLocal = [];
+          try { currentLocal = JSON.parse(localStorage.getItem(	ravelverse_interests_) || '[]'); } catch (e) { }
+          const destNorm = dest.trim().toLowerCase();
+          currentLocal = currentLocal.filter(i => (i.destination || '').trim().toLowerCase() !== destNorm);
+          currentLocal.unshift({
+            id: Date.now(),
+            ...payload,
+            created_at: new Date().toISOString()
+          });
+          localStorage.setItem(	ravelverse_interests_, JSON.stringify(currentLocal));
+        } catch (err) { }
+
+        closeAssistantInterestModal();
+      });
+    }
+  </script>
+
+</body>
+
+</html>

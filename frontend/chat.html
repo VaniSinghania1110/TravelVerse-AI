@@ -1,0 +1,4248 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TravelVerse — Direct Buddy Chat</title>
+
+<script>
+
+  (function(){
+
+    var activeEmail = (localStorage.getItem('travelverse_current_user_email') || '').trim().toLowerCase();
+
+    var isAuth = localStorage.getItem('travelverse_session_active') === 'true';
+
+    if (!isAuth || !activeEmail || activeEmail === 'null' || activeEmail === 'undefined') {
+
+      localStorage.clear();
+
+      window.location.href = 'login.html';
+
+    }
+
+  })();
+
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+<style>
+
+  :root{
+
+    --bg-night: #0B2027;
+
+    --bg-night-2: #123A42;
+
+    --card-cream: #FFFDF8;
+
+    --ink: #17242A;
+
+    --ink-soft: #55625F;
+
+    --accent-sunset: #E8874A;
+
+    --accent-coral: #D6555A;
+
+    --gold: #C9A227;
+
+    --star: #FDEBD3;
+
+    --line: rgba(23,36,42,0.12);
+
+    --page-bg: #F4EEE2;
+
+    --green-badge: #2E7D32;
+
+  }
+
+  *{ box-sizing:border-box; }
+
+  html, body{ height:100%; margin:0; overflow:hidden; }
+
+  body{
+
+    font-family:'Work Sans', sans-serif;
+
+    color: var(--ink);
+
+    background: var(--page-bg);
+
+    display:flex; flex-direction:column;
+
+  }
+
+
+
+  /* ---------- NAV ---------- */
+
+  nav{
+
+    display:flex; align-items:center; justify-content:space-between;
+
+    padding: 16px 5vw;
+
+    background: var(--bg-night);
+
+    color: var(--star);
+
+    flex-shrink:0; z-index:10;
+
+  }
+
+  .logo{
+
+    font-family:'Fraunces', serif; font-weight:700; font-size:20px;
+
+    display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--star);
+
+  }
+
+  .logo-dot{ width:8px; height:8px; border-radius:50%; background: var(--gold); }
+
+  .nav-links{ display:flex; gap:30px; font-size:14px; font-weight:500; }
+
+  .nav-links a{ color: rgba(253,235,211,0.75); text-decoration:none; transition: color .2s ease; }
+
+  .nav-links a.active{ color: var(--star); border-bottom:2px solid var(--gold); padding-bottom:4px; }
+
+  .nav-links a:hover{ color: var(--star); }
+
+  .nav-right{ display:flex; align-items:center; gap:16px; }
+
+  .user-chip{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; }
+
+  .user-avatar{
+
+    position:relative;
+
+    width:36px; height:36px; border-radius:50%;
+
+    background: linear-gradient(135deg, var(--accent-sunset), var(--accent-coral));
+
+    display:flex; align-items:center; justify-content:center;
+
+    font-family:'Fraunces', serif; font-weight:700; font-size:14px; color:#fff;
+
+    cursor:pointer; overflow:hidden; border:none; padding:0;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+
+  }
+
+  .user-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+
+
+  .account-menu-wrap{ position:relative; }
+
+  .account-menu-trigger{
+
+    display:flex; align-items:center; gap:6px;
+
+    background:none; border:none; color: var(--star);
+
+    font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+
+    padding:6px 4px;
+
+  }
+
+  .account-menu{
+
+    position:absolute; top: calc(100% + 8px); right:0;
+
+    background: var(--card-cream); border-radius: 12px;
+
+    box-shadow: 0 16px 34px rgba(0,0,0,0.22);
+
+    min-width: 160px; padding: 6px;
+
+    opacity:0; visibility:hidden; transform: translateY(-6px);
+
+    transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+
+    z-index: 50;
+
+  }
+
+  .account-menu.show{ opacity:1; visibility:visible; transform: translateY(0); }
+
+  .account-menu-item{
+
+    display:block; width:100%; text-align:left;
+
+    background:none; border:none; border-radius:8px;
+
+    padding:9px 12px; font-family:inherit; font-size:13.5px; font-weight:600;
+
+    color: var(--ink); cursor:pointer; transition: background .15s ease;
+
+  }
+
+  .account-menu-item:hover{ background: rgba(23,36,42,0.06); }
+
+  .account-menu-item.danger{ color: var(--accent-coral); }
+
+
+
+  /* ---------- MAIN CHAT CONTAINER ---------- */
+
+  .chat-layout{
+
+    flex:1; display:flex; overflow:hidden; position:relative;
+
+  }
+
+
+
+  /* SIDEBAR */
+
+  .chat-sidebar{
+
+    width:340px; background: #fff; border-right:1px solid var(--line);
+
+    display:flex; flex-direction:column; flex-shrink:0;
+
+  }
+
+  .sidebar-header{
+
+    padding:18px 20px; border-bottom:1px solid var(--line);
+
+    background: var(--card-cream);
+
+  }
+
+  .sidebar-header h2{
+
+    font-family:'Fraunces', serif; font-size:20px; margin:0 0 10px; color:var(--ink);
+
+  }
+
+  .search-input-wrap{ position:relative; }
+
+  .search-input-wrap input{
+
+    width:100%; padding:9px 14px 9px 36px; border:1.5px solid var(--line);
+
+    border-radius:20px; font-family:inherit; font-size:13.5px; outline:none; background:#fff;
+
+  }
+
+  .search-input-wrap input:focus{ border-color: var(--accent-sunset); }
+
+  .search-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.5; font-size:14px; }
+
+  /* CHAT FILTER TABS */
+  .chat-filter-tabs {
+    display: flex; gap: 6px; padding: 10px 16px; background: #fff;
+    border-bottom: 1px solid rgba(23,36,42,0.08);
+  }
+  .chat-tab-pill {
+    background: #F4EEE2; border: 1px solid transparent; color: var(--ink-soft);
+    font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 20px;
+    cursor: pointer; transition: all .15s ease; display: inline-flex; align-items: center; gap: 5px;
+  }
+  .chat-tab-pill:hover {
+    background: #eae2d3; color: var(--ink);
+  }
+  .chat-tab-pill.active {
+    background: rgba(232,135,74,0.15); color: var(--accent-sunset);
+    border-color: rgba(232,135,74,0.35); font-weight: 700;
+  }
+  .tab-badge {
+    background: var(--accent-sunset); color: #fff; font-size: 10px;
+    padding: 1px 6px; border-radius: 10px; font-weight: 700;
+  }
+  .sidebar-section-title {
+    padding: 8px 18px 4px 18px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.6px; color: var(--ink-soft);
+    background: rgba(23,36,42,0.02);
+  }
+  .chat-bubble.admin-bubble {
+    background: #FFFDF8 !important; border: 1.5px solid rgba(232,135,74,0.35) !important;
+    box-shadow: 0 3px 10px rgba(232,135,74,0.08) !important;
+  }
+  .announcement-banner {
+    display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 800;
+    letter-spacing: 0.5px; color: #D6555A; text-transform: uppercase; margin-bottom: 4px;
+    padding-bottom: 4px; border-bottom: 1px dashed rgba(214,85,90,0.25);
+  }
+
+  .buddies-list{
+
+    flex:1; overflow-y:auto; padding:10px 0; min-height:0; overscroll-behavior:contain;
+
+  }
+
+  .buddy-item{
+
+    display:flex; align-items:center; gap:12px; padding:14px 20px;
+
+    cursor:pointer; transition: background .15s ease; border-bottom:1px solid rgba(23,36,42,0.04);
+
+  }
+
+  .buddy-item:hover{ background: rgba(23,36,42,0.03); }
+
+  .buddy-item.active{
+
+    background: rgba(232,135,74,0.12); border-left:4px solid var(--accent-sunset);
+
+  }
+
+  .buddy-avatar-wrap{
+
+    width:44px; height:44px; border-radius:50%;
+
+    background: linear-gradient(135deg, var(--accent-sunset), var(--accent-coral));
+
+    color:#fff; font-family:'Fraunces', serif; font-weight:700; font-size:17px;
+
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+
+    overflow:hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  }
+
+  .buddy-avatar-wrap img{ width:100%; height:100%; object-fit:cover; }
+
+  .buddy-info{ flex:1; min-width:0; }
+
+  .buddy-name-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+
+  .buddy-name{ font-family:'Fraunces', serif; font-weight:700; font-size:15px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .buddy-dest{ font-size:12px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+
+
+  /* MAIN CHAT PANE */
+
+  .chat-main{
+
+    flex:1; display:flex; flex-direction:column; background: var(--page-bg); overflow:hidden;
+
+  }
+
+  .chat-header{
+
+    padding:16px 28px; background: var(--bg-night); color: var(--star);
+
+    display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+
+  }
+
+  .chat-header-user{ display:flex; align-items:center; gap:14px; }
+
+  .header-avatar{
+
+    width:44px; height:44px; border-radius:50%;
+
+    background: linear-gradient(135deg, var(--accent-sunset), var(--accent-coral));
+
+    color:#fff; font-family:'Fraunces', serif; font-weight:700; font-size:18px;
+
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;
+
+  }
+
+  .header-avatar img{ width:100%; height:100%; object-fit:cover; }
+
+  .header-name{ font-family:'Fraunces', serif; font-size:18px; font-weight:700; color:var(--star); margin:0 0 2px; }
+
+  .header-sub{ font-size:12.5px; color: rgba(253,235,211,0.75); }
+
+
+
+  .chat-thread{
+
+    flex:1; padding:20px 32px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; min-height:0; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+
+  }
+
+
+
+  /* WHATSAPP DATE DIVIDER & TICKS */
+
+  .chat-date-separator {
+
+    display: flex; justify-content: center; margin: 12px 0 4px 0; width: 100%;
+
+  }
+
+  .chat-date-separator span {
+
+    background: #E8E2D8; color: #54656F; font-size: 11px; font-weight: 700;
+
+    padding: 4px 14px; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+
+    text-transform: uppercase; letter-spacing: 0.5px;
+
+  }
+
+
+
+  .message-row{ display:flex; flex-direction:column; margin-bottom: 2px; }
+
+  .message-row.me{ align-items:flex-end; }
+
+  .message-row.buddy{ align-items:flex-start; }
+
+
+
+  .chat-bubble{
+
+    max-width:74%; padding:9px 14px 7px 14px; border-radius:16px; font-size:14.5px; line-height:1.45;
+
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: relative; word-break: break-word;
+
+  }
+
+  .message-row.me .chat-bubble{
+
+    background: #17242A;
+
+    color: #FAF5EB; border-bottom-right-radius: 4px;
+
+  }
+
+  .message-row.buddy .chat-bubble{
+
+    background: #fff; color: var(--ink); border: 1px solid rgba(23,36,42,0.08);
+
+    border-bottom-left-radius: 4px;
+
+  }
+
+
+
+  .msg-text-content {
+
+    display: inline;
+
+    white-space: pre-wrap;
+
+  }
+
+
+
+  .msg-meta {
+
+    display: inline-flex; align-items: center; gap: 4px; float: right;
+
+    margin-left: 10px; margin-top: 4px; font-size: 11px; line-height: 1;
+
+    user-select: none;
+
+  }
+
+  .message-row.me .msg-meta { color: rgba(250,245,235,0.7); }
+
+  .message-row.buddy .msg-meta { color: #8696A0; }
+
+
+
+  .tick-svg {
+
+    width: 16px; height: 11px; display: inline-flex; align-items: center; justify-content: center;
+
+    vertical-align: -1px; margin-left: 2px;
+
+  }
+
+  .tick-svg svg {
+
+    width: 16px; height: 11px; display: block;
+
+  }
+
+  .tick-blue { color: #34B7F1 !important; }
+
+  .tick-gray { color: #8696A0 !important; }
+
+
+
+  
+
+  /* AI ICEBREAKER HEADER BUTTON */
+  .btn-start-ai-header {
+    background: linear-gradient(135deg, #E8874A, #D6555A) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    padding: 7px 16px !important;
+    border-radius: 20px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 3px 10px rgba(232,135,74,0.45) !important;
+    letter-spacing: 0.2px !important;
+  }
+  .btn-start-ai-header * {
+    color: #FFFFFF !important;
+  }
+  .btn-start-ai-header:hover {
+    background: linear-gradient(135deg, #f0955d, #e06368) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 5px 16px rgba(232,135,74,0.55) !important;
+  }
+  .btn-start-ai-header .sparkle-anim {
+    font-size: 14px !important;
+    display: inline-block !important;
+    animation: gentleSparkle 2s infinite ease-in-out !important;
+  }
+  @keyframes gentleSparkle {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(15deg); }
+  }
+
+  .highlight-input {
+    animation: inputPulse 0.5s ease;
+  }
+  @keyframes inputPulse {
+    0% { box-shadow: 0 0 0 0 rgba(232, 135, 74, 0); }
+    50% { box-shadow: 0 0 0 4px rgba(232, 135, 74, 0.35); border-color: var(--accent-sunset); }
+    100% { box-shadow: 0 0 0 0 rgba(232, 135, 74, 0); }
+  }
+
+  /* EMOJI PICKER & FOOTER WRAPPER */
+
+  .chat-footer-wrapper {
+
+    position: relative;
+
+    background: #fff;
+
+    border-top: 1px solid var(--line);
+
+    flex-shrink: 0;
+
+  }
+
+  .chat-footer {
+
+    padding: 13px 24px;
+
+    background: transparent;
+
+    border-top: none;
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    flex-shrink: 0;
+
+  }
+
+  .btn-emoji-trigger {
+
+    width: 40px;
+
+    height: 40px;
+
+    border-radius: 50%;
+
+    border: none;
+
+    background: transparent;
+
+    color: #54656F;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition: all 0.18s ease;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+  }
+
+  .btn-emoji-trigger:hover, .btn-emoji-trigger.active {
+
+    background: rgba(232, 135, 74, 0.15);
+
+    color: var(--accent-sunset);
+
+    transform: scale(1.08);
+
+  }
+
+
+
+  .emoji-picker-popover {
+
+    position: absolute;
+
+    bottom: calc(100% + 8px);
+
+    left: 20px;
+
+    width: 350px;
+
+    max-height: 290px;
+
+    background: #FFFDF9;
+
+    border: 1px solid var(--line);
+
+    border-radius: 18px;
+
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
+
+    display: flex;
+
+    flex-direction: column;
+
+    overflow: hidden;
+
+    z-index: 100;
+
+    animation: modalPop 0.18s ease-out;
+
+  }
+
+  .emoji-picker-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 8px 12px;
+
+    background: #FAF5EB;
+
+    border-bottom: 1px solid var(--line);
+
+    user-select: none;
+
+  }
+
+  .emoji-tabs {
+
+    display: flex;
+
+    gap: 4px;
+
+  }
+
+  .emoji-tab-btn {
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 11.5px;
+
+    font-weight: 700;
+
+    color: var(--ink-soft);
+
+    padding: 5px 8px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: all 0.15s ease;
+
+  }
+
+  .emoji-tab-btn.active, .emoji-tab-btn:hover {
+
+    background: #fff;
+
+    color: var(--ink);
+
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+
+  }
+
+  .emoji-close-btn {
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 13px;
+
+    color: var(--ink-soft);
+
+    cursor: pointer;
+
+    padding: 4px 6px;
+
+    border-radius: 6px;
+
+    transition: all .15s ease;
+
+  }
+
+  .emoji-close-btn:hover {
+
+    color: var(--ink);
+
+    background: rgba(0,0,0,0.05);
+
+  }
+
+  .emoji-grid {
+
+    padding: 10px;
+
+    display: grid;
+
+    grid-template-columns: repeat(7, 1fr);
+
+    gap: 5px;
+
+    overflow-y: auto;
+
+    max-height: 220px;
+
+  }
+
+  .emoji-item {
+
+    font-size: 22px;
+
+    width: 38px;
+
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    border-radius: 8px;
+
+    border: none;
+
+    background: transparent;
+
+    transition: transform 0.12s ease, background 0.12s ease;
+
+    user-select: none;
+
+    line-height: 1;
+
+  }
+
+  .emoji-item:hover {
+
+    background: rgba(232, 135, 74, 0.15);
+
+    transform: scale(1.25);
+
+  }
+
+
+
+  /* INPUT BAR */
+
+  .chat-footer{
+
+    padding:16px 28px; background: #fff; border-top:1px solid var(--line);
+
+    display:flex; gap:12px; align-items:center; flex-shrink:0;
+
+  }
+
+  .chat-footer input{
+
+    flex:1; padding:13px 20px; border:1.5px solid var(--line); border-radius:30px;
+
+    font-family:inherit; font-size:14.5px; outline:none; background: var(--card-cream);
+
+    transition: border-color .18s ease;
+
+  }
+
+  .chat-footer input:focus{ border-color: var(--accent-sunset); background:#fff; }
+
+  .btn-send{
+
+    background: linear-gradient(135deg, var(--accent-sunset), var(--accent-coral));
+
+    color:#fff; border:none; padding:13px 26px; border-radius:30px;
+
+    font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;
+
+    box-shadow:0 6px 18px rgba(232,135,74,0.3); transition: transform .15s ease; flex-shrink:0;
+
+  }
+
+  .btn-send:hover{ transform: translateY(-1px); }
+
+
+
+  
+
+  
+
+  /* MESSAGE BUBBLE WRAP & DELETE CONTROLS */
+
+  .msg-bubble-wrap {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    max-width: 82%;
+
+    position: relative;
+
+  }
+
+  .message-row.me .msg-bubble-wrap {
+
+    flex-direction: row;
+
+    justify-content: flex-end;
+
+  }
+
+  .message-row.buddy .msg-bubble-wrap {
+
+    flex-direction: row-reverse;
+
+    justify-content: flex-end;
+
+  }
+
+  .chat-bubble {
+
+    position: relative;
+
+    padding-right: 28px !important;
+
+  }
+
+  .msg-chevron-btn {
+
+    position: absolute;
+
+    top: 4px;
+
+    right: 5px;
+
+    width: 20px;
+
+    height: 20px;
+
+    border-radius: 50%;
+
+    border: none;
+
+    background: rgba(0, 0, 0, 0.07);
+
+    color: #667781;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    padding: 0;
+
+    transition: opacity 0.15s ease, background 0.15s ease, transform 0.15s ease;
+
+    z-index: 3;
+
+  }
+
+  .chat-bubble:hover .msg-chevron-btn {
+
+    opacity: 0.85;
+
+    pointer-events: auto;
+
+  }
+
+  .msg-chevron-btn:hover {
+
+    opacity: 1 !important;
+
+    background: rgba(0, 0, 0, 0.16) !important;
+
+    color: #111b21 !important;
+
+    transform: scale(1.08);
+
+  }
+
+  .message-row.me .msg-chevron-btn {
+
+    background: rgba(255, 255, 255, 0.14);
+
+    color: rgba(250, 245, 235, 0.85);
+
+  }
+
+  .message-row.me .msg-chevron-btn:hover {
+
+    background: rgba(255, 255, 255, 0.3) !important;
+
+    color: #FAF5EB !important;
+
+  }
+
+  .msg-quick-del-btn {
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    width: 28px;
+
+    height: 28px;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(23, 36, 42, 0.12);
+
+    background: #FFFDF9;
+
+    color: #e53935;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    line-height: 1;
+
+    transition: all 0.15s ease;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+
+    flex-shrink: 0;
+
+  }
+
+  .msg-bubble-wrap:hover .msg-quick-del-btn,
+
+  .message-row:hover .msg-quick-del-btn {
+
+    opacity: 1;
+
+    visibility: visible;
+
+  }
+
+  .msg-quick-del-btn:hover {
+
+    background: #fee2e2;
+
+    transform: scale(1.1);
+
+  }
+
+
+
+  /* WHATSAPP UNREAD BADGE */
+
+  .buddy-unread-badge {
+
+    background: #25D366;
+
+    color: #ffffff;
+
+    font-size: 11.5px;
+
+    font-weight: 700;
+
+    min-width: 20px;
+
+    height: 20px;
+
+    border-radius: 10px;
+
+    padding: 0 6px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin-left: auto;
+
+    box-shadow: 0 2px 6px rgba(37,211,102,0.4);
+
+    flex-shrink: 0;
+
+    line-height: 1;
+
+  }
+
+
+
+  /* MESSAGE ACTION / DELETE BUTTON (WHATSAPP STYLE) */
+
+  .chat-bubble {
+
+    position: relative;
+
+  }
+
+  .msg-action-trigger {
+
+    position: absolute;
+
+    top: 4px;
+
+    right: 5px;
+
+    width: 20px;
+
+    height: 20px;
+
+    border-radius: 50%;
+
+    border: none;
+
+    background: rgba(0, 0, 0, 0.12);
+
+    color: inherit;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    padding: 0;
+
+    z-index: 4;
+
+    transition: background 0.15s ease, opacity 0.15s ease;
+
+  }
+
+  .message-row.me .msg-action-trigger {
+
+    background: rgba(255, 255, 255, 0.22);
+
+    color: #FAF5EB;
+
+  }
+
+  .message-row.buddy .msg-action-trigger {
+
+    background: rgba(23, 36, 42, 0.08);
+
+    color: #17242A;
+
+  }
+
+  .chat-bubble:hover .msg-action-trigger {
+
+    display: flex;
+
+  }
+
+  .msg-action-trigger:hover {
+
+    background: rgba(0, 0, 0, 0.25) !important;
+
+  }
+
+  .message-row.me .msg-action-trigger:hover {
+
+    background: rgba(255, 255, 255, 0.35) !important;
+
+  }
+
+
+
+  /* DELETED MESSAGE BUBBLE */
+
+  .chat-bubble.msg-deleted-bubble {
+
+    font-style: italic !important;
+
+    opacity: 0.8 !important;
+
+    background: rgba(23, 36, 42, 0.05) !important;
+
+    color: #8696a0 !important;
+
+    border: 1px dashed rgba(23, 36, 42, 0.15) !important;
+
+    display: inline-flex !important;
+
+    align-items: center;
+
+    gap: 6px;
+
+  }
+
+  .chat-bubble.msg-deleted-bubble .msg-meta {
+
+    color: #94a3b8 !important;
+
+  }
+
+  .chat-bubble.msg-deleted-bubble .msg-action-trigger {
+
+    display: none !important;
+
+  }
+
+
+
+  /* WHATSAPP DELETE MODAL */
+
+  .delete-msg-overlay {
+
+    position: fixed; inset: 0; background: rgba(11,32,39,0.6);
+
+    backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center;
+
+    z-index: 3000; padding: 20px;
+
+  }
+
+  .delete-msg-box {
+
+    background: #FFFDF9; border-radius: 18px; width: 100%; max-width: 380px;
+
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--line);
+
+    padding: 24px; text-align: left; animation: modalPop .18s ease-out;
+
+  }
+
+  .delete-msg-title {
+
+    font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: var(--ink); margin: 0 0 8px 0;
+
+  }
+
+  .delete-msg-sub {
+
+    font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin: 0 0 20px 0;
+
+  }
+
+  .delete-msg-actions {
+
+    display: flex; flex-direction: column; gap: 9px;
+
+  }
+
+  .btn-del-modal {
+
+    width: 100%; padding: 12px 18px; border-radius: 12px; font-size: 14px; font-weight: 700;
+
+    cursor: pointer; border: none; text-align: center; transition: all .15s ease;
+
+  }
+
+  .btn-del-everyone {
+
+    background: #e53935; color: #fff; box-shadow: 0 4px 12px rgba(229,57,53,0.3);
+
+  }
+
+  .btn-del-everyone:hover {
+
+    background: #c62828; transform: translateY(-1px);
+
+  }
+
+  .btn-del-me {
+
+    background: #FAF5EB; color: var(--ink); border: 1.5px solid var(--line);
+
+  }
+
+  .btn-del-me:hover {
+
+    background: #F1ECE0;
+
+  }
+
+  .btn-del-cancel {
+
+    background: transparent; color: var(--ink-soft); padding: 9px;
+
+  }
+
+  .btn-del-cancel:hover {
+
+    color: var(--ink);
+
+  }
+
+
+
+  /* EMPTY STATE */
+
+  .empty-chat-pane{
+
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+
+    padding:40px; text-align:center; background: var(--page-bg);
+
+  }
+
+  .empty-chat-icon{ font-size:52px; margin-bottom:14px; }
+
+  .empty-chat-title{ font-family:'Fraunces', serif; font-size:24px; margin:0 0 8px; color:var(--ink); }
+
+  .empty-chat-sub{ font-size:14px; color:var(--ink-soft); max-width:400px; margin:0 0 20px; line-height:1.5; }
+
+
+
+  /* MODAL */
+
+  .modal-overlay{
+
+    position: fixed; inset: 0; background: rgba(11,32,39,0.72);
+
+    backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center;
+
+    z-index: 1000; padding: 20px;
+
+  }
+
+  .modal-card{
+
+    background: #FFFDF9; border-radius: 20px; width: 100%; max-width: 520px;
+
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid var(--line);
+
+    position: relative; max-height: 90vh; overflow-y: auto; padding: 26px;
+
+    animation: modalPop .2s ease-out;
+
+  }
+
+  @keyframes modalPop{
+
+    from { opacity: 0; transform: scale(0.96); }
+
+    to { opacity: 1; transform: scale(1); }
+
+  }
+
+  .modal-close{
+
+    position: absolute; top: 16px; right: 16px;
+
+    background: rgba(23,36,42,0.06); border: none; width: 32px; height: 32px;
+
+    border-radius: 50%; font-size: 16px; cursor: pointer; color: var(--ink);
+
+    display: flex; align-items: center; justify-content: center; transition: all .2s;
+
+  }
+
+  .modal-close:hover{ background: rgba(23,36,42,0.15); }
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- NAV -->
+
+<nav>
+
+  <a href="dashboard.html" class="logo"><span class="logo-dot"></span> TravelVerse</a>
+
+  <div class="nav-links">
+
+    <a href="dashboard.html">Dashboard</a>
+
+    <a href="companions.html">Find companions</a>
+
+    <a href="connections.html">Connections</a>
+
+    <a href="chat.html" class="active">Chat</a>
+
+    <a href="agent.html">Agents</a>
+
+    <a href="assistant.html">Assistant</a>
+
+  </div>
+
+  <div class="nav-right">
+
+    <div class="user-chip">
+
+      <button type="button" class="user-avatar" id="user-avatar">
+
+        <span id="avatar-initial">T</span>
+
+      </button>
+
+      <div class="account-menu-wrap">
+
+        <button type="button" class="account-menu-trigger" id="account-menu-trigger">
+
+          <span id="user-name-chip">Traveller</span>
+
+          <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+
+        </button>
+
+        <div class="account-menu" id="account-menu">
+
+          <button type="button" id="logout-btn" class="account-menu-item danger">Log out</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</nav>
+
+
+
+<!-- MAIN CHAT LAYOUT -->
+
+<div class="chat-layout">
+
+
+
+  <!-- SIDEBAR: BUDDY LIST & TRIP GROUPS -->
+
+  <div class="chat-sidebar">
+
+    <div class="sidebar-header">
+
+      <h2>Travel Chats</h2>
+
+      <div class="search-input-wrap">
+
+        <span class="search-icon">🔍</span>
+
+        <input type="text" id="buddy-search-input" placeholder="Search chats, trips, buddies...">
+
+      </div>
+
+    </div>
+
+    <div class="chat-filter-tabs">
+
+      <button type="button" id="tab-chat-all" class="chat-tab-pill active" onclick="switchChatFilter('all')">All</button>
+
+      <button type="button" id="tab-chat-direct" class="chat-tab-pill" onclick="switchChatFilter('direct')">💬 Direct</button>
+
+      <button type="button" id="tab-chat-trips" class="chat-tab-pill" onclick="switchChatFilter('trips')">🎒 Trip Groups <span id="trip-badge-count" class="tab-badge" style="display:none;">0</span></button>
+
+    </div>
+
+    <div class="buddies-list" id="buddies-list-container">
+
+      <!-- Populated dynamically via JS -->
+
+    </div>
+
+  </div>
+
+
+
+  <!-- MAIN CHAT PANE -->
+
+  <div class="chat-main" id="chat-main-pane">
+
+    <!-- Rendered dynamically -->
+
+  </div>
+
+
+
+</div>
+
+
+
+<!-- TRIP ROSTER & INFO MODAL -->
+
+<div id="trip-roster-modal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(11,32,39,0.7); z-index:9999; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(3px);" onclick="if(event.target===this)closeTripRosterModal()">
+
+  <div style="background:#FFFDF8; width:100%; max-width:540px; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.25); display:flex; flex-direction:column; max-height:90vh;">
+
+    <!-- Modal Header with trip cover image -->
+
+    <div id="roster-modal-banner" style="position:relative; height:130px; background:#123A42;">
+
+      <img id="roster-cover-img" src="" style="width:100%; height:100%; object-fit:cover; opacity:0.85;" alt="Cover">
+
+      <button type="button" onclick="closeTripRosterModal()" style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.5); color:#fff; border:none; width:30px; height:30px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+
+      <div style="position:absolute; bottom:12px; left:18px; right:18px; color:#fff;">
+
+        <h3 id="roster-trip-title" style="font-family:'Fraunces', serif; font-size:20px; margin:0 0 2px; text-shadow:0 1px 4px rgba(0,0,0,0.6);"></h3>
+
+        <div id="roster-trip-sub" style="font-size:12.5px; opacity:0.9; text-shadow:0 1px 3px rgba(0,0,0,0.6);"></div>
+
+      </div>
+
+    </div>
+
+    <!-- Modal Body -->
+
+    <div style="padding:20px 22px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:16px;">
+
+      <!-- Host & Admin Card -->
+
+      <div style="background:#FAF5EB; border:1px solid rgba(23,36,42,0.1); border-radius:14px; padding:14px 16px;">
+
+        <div style="font-size:11px; font-weight:800; letter-spacing:0.5px; color:#D6555A; text-transform:uppercase; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
+
+          Trip Host & Admin
+
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+
+          <div>
+
+            <div id="roster-agent-name" style="font-family:'Fraunces', serif; font-size:16px; font-weight:700; color:var(--ink);"></div>
+
+            <div id="roster-agency-name" style="font-size:12.5px; color:var(--ink-soft); font-weight:500;"></div>
+
+            <div id="roster-agent-contact" style="font-size:12px; color:var(--ink-soft); margin-top:4px;"></div>
+
+          </div>
+
+          <span style="background:linear-gradient(135deg, var(--accent-sunset), var(--accent-coral)); color:#fff; font-size:11px; font-weight:700; padding:4px 10px; border-radius:12px; white-space:nowrap;">Verified Admin</span>
+
+        </div>
+
+      </div>
+
+      <!-- Enrolled Travelers List -->
+
+      <div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+
+          <h4 style="font-family:'Fraunces', serif; font-size:15px; margin:0; color:var(--ink);">👥 Enrolled Travellers</h4>
+
+          <span id="roster-travelers-count" style="font-size:12px; font-weight:600; color:var(--ink-soft);"></span>
+
+        </div>
+
+        <div id="roster-members-list" style="display:flex; flex-direction:column; gap:8px;">
+
+          <!-- Dynamically populated -->
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+
+    <div style="padding:14px 22px; background:#FAF5EB; border-top:1px solid rgba(23,36,42,0.08); display:flex; justify-content:space-between; align-items:center;">
+
+      <a id="roster-trip-link" href="#" target="_blank" style="font-size:12.5px; font-weight:700; color:var(--accent-sunset); text-decoration:none;">🗺️ View Full Trip Details</a>
+
+      <button type="button" onclick="closeTripRosterModal()" style="background:#fff; border:1.5px solid var(--line); color:var(--ink); font-weight:600; font-size:13px; padding:8px 18px; border-radius:20px; cursor:pointer;">Close</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- AGENT PROFILE MODAL -->
+
+<div class="modal-overlay" id="agent-profile-modal" onclick="if(event.target===this)closeAgentProfileModal()">
+
+  <div class="modal-card">
+
+    <button class="modal-close" onclick="closeAgentProfileModal()">✕</button>
+
+    <div id="agent-profile-modal-body">
+
+      <!-- Injected by JS -->
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+  const API_BASE = (() => {
+    if (typeof window !== 'undefined' && window.TRAVELVERSE_API_BASE) {
+      return window.TRAVELVERSE_API_BASE;
+    }
+    if (typeof window !== 'undefined' && window.location && window.location.protocol && window.location.protocol.startsWith('http')) {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (!isLocal || window.location.port === '8000') {
+        return window.location.origin;
+      }
+      return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
+    return "http://127.0.0.1:8000";
+  })();
+
+
+
+  // Identity
+
+  function getValidUserString(val) {
+
+    if (!val) return '';
+
+    const s = String(val).trim();
+
+    if (s === '' || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined' || s.toLowerCase() === 'traveller') return '';
+
+    return s;
+
+  }
+
+
+
+  function getCurrentUser() {
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const urlUser = (urlParams.get('user') || urlParams.get('as_user') || urlParams.get('me') || '').trim();
+
+
+
+    let email = getValidUserString(urlUser || sessionStorage.getItem('travelverse_current_user_email') || localStorage.getItem('travelverse_current_user_email')).toLowerCase();
+
+
+
+    let name = '';
+
+    let username = '';
+
+    let pic = '';
+
+
+
+    // 1. Look up user by email in saved accounts first
+
+    try {
+
+      const accounts = JSON.parse(localStorage.getItem('travelverse_accounts') || '[]');
+
+      const userObj = accounts.find(a => a && a.email && getValidUserString(a.email).toLowerCase() === email);
+
+      if (userObj) {
+
+        username = getValidUserString(userObj.username);
+
+        name = getValidUserString(userObj.firstName ? (userObj.firstName + (userObj.lastName ? ' ' + userObj.lastName : '')) : (userObj.first_name || userObj.name));
+
+        pic = userObj.profilePic || userObj.profile_pic || '';
+
+      }
+
+    } catch(e) {}
+
+
+
+    // 2. Only use localStorage username if it strictly matches this logged-in account
+
+    if (!username) {
+
+      const storedEmail = (localStorage.getItem('travelverse_current_user_email') || '').toLowerCase().trim();
+
+      if (storedEmail === email) {
+
+        username = getValidUserString(sessionStorage.getItem('travelverse_username') || localStorage.getItem('travelverse_username'));
+
+        if (!name) name = getValidUserString(sessionStorage.getItem('travelverse_user_name') || localStorage.getItem('travelverse_user_name'));
+
+        if (!pic) pic = sessionStorage.getItem('travelverse_profile_pic') || localStorage.getItem('travelverse_profile_pic') || '';
+
+      }
+
+    }
+
+
+
+    if (!username && email) {
+
+      username = email.split('@')[0];
+
+    }
+
+
+
+    const display = username || name || 'Traveller';
+
+    return { email, name: name || display, username: username || display, pic, display };
+
+  }
+
+
+
+  async function syncCurrentUserProfile() {
+
+    const user = getCurrentUser();
+
+    if (!user.email) return;
+
+
+
+    try {
+
+      const res = await fetch(`${API_BASE}/all-users`);
+
+      if (res.ok) {
+
+        const data = await res.json();
+
+        if (data.status === 'success' && Array.isArray(data.users)) {
+
+          const matched = data.users.find(u => u && u.email && u.email.toLowerCase() === user.email.toLowerCase());
+
+          if (matched && matched.username) {
+
+            let accounts = [];
+
+            try { accounts = JSON.parse(localStorage.getItem('travelverse_accounts') || '[]'); } catch(e) {}
+
+            const existingIdx = accounts.findIndex(a => a && a.email && a.email.toLowerCase() === user.email.toLowerCase());
+
+            const fullN = (matched.first_name || '') + (matched.last_name ? ' ' + matched.last_name : '');
+
+            const updatedAccount = {
+
+              ...(existingIdx >= 0 ? accounts[existingIdx] : {}),
+
+              email: matched.email,
+
+              username: matched.username,
+
+              firstName: matched.first_name || 'Traveler',
+
+              lastName: matched.last_name || '',
+
+              name: fullN.trim() || matched.username,
+
+              profilePic: matched.profile_pic || ''
+
+            };
+
+            if (existingIdx >= 0) accounts[existingIdx] = updatedAccount;
+
+            else accounts.push(updatedAccount);
+
+            localStorage.setItem('travelverse_accounts', JSON.stringify(accounts));
+
+            renderUserHeader();
+
+          }
+
+        }
+
+      }
+
+    } catch(e) {}
+
+  }
+
+
+
+  function renderUserHeader() {
+
+    const user = getCurrentUser();
+
+    const finalName = user.display;
+
+    const finalInitial = finalName.charAt(0).toUpperCase();
+
+
+
+    const nameChipEl = document.getElementById('user-name-chip');
+
+    const avatarBtnEl = document.getElementById('user-avatar');
+
+    if (nameChipEl) nameChipEl.textContent = finalName;
+
+    if (avatarBtnEl) {
+
+      if (user.pic && user.pic.length > 10) {
+
+        avatarBtnEl.innerHTML = `<img src="${user.pic}" alt="Profile picture">`;
+
+      } else {
+
+        avatarBtnEl.innerHTML = `<span id="avatar-initial">${finalInitial}</span>`;
+
+      }
+
+    }
+
+  }
+
+
+
+  // Account Menu
+
+  document.getElementById('account-menu-trigger')?.addEventListener('click', (e) => {
+
+    e.stopPropagation();
+
+    document.getElementById('account-menu')?.classList.toggle('show');
+
+  });
+
+  document.addEventListener('click', () => {
+
+    document.getElementById('account-menu')?.classList.remove('show');
+
+  });
+
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+
+    localStorage.removeItem('travelverse_session_active');
+
+    window.location.href = 'login.html';
+
+  });
+
+
+
+  // ==========================================
+
+  // CHAT SYSTEM STATE & MONGO SYNC
+
+  // ==========================================
+
+  let travelBuddies = [];
+  let userTripGroups = [];
+  let activeChatMode = 'direct'; // 'direct' or 'trip'
+  let activeBuddy = null;
+  let activeTripGroup = null;
+  let activeTripMembers = [];
+  let currentChatFilter = 'all'; // 'all', 'direct', 'trips'
+  let chatPollTimer = null;
+  let isPollFetching = false;
+  let lastRenderedMessageSignature = '';
+
+
+
+  function escapeHtml(str) {
+
+    if (!str) return '';
+
+    return String(str)
+
+      .replace(/&/g, '&amp;')
+
+      .replace(/</g, '&lt;')
+
+      .replace(/>/g, '&gt;')
+
+      .replace(/"/g, '&quot;')
+
+      .replace(/'/g, '&#39;');
+
+  }
+
+
+
+  function getMessageDateGroup(dateStr) {
+
+    if (!dateStr) return 'Today';
+
+    const d = new Date(dateStr);
+
+    if (isNaN(d.getTime())) return 'Today';
+
+    const now = new Date();
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const yesterday = new Date(today);
+
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+
+
+    if (target.getTime() === today.getTime()) return 'Today';
+
+    if (target.getTime() === yesterday.getTime()) return 'Yesterday';
+
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  }
+
+
+
+  function getWhatsAppTickHtml(m, userEmail) {
+    const status = ((m && m.status) || 'sent').toLowerCase();
+    const isRead = status === 'read';
+    const isDelivered = status === 'delivered';
+
+    if (isRead) {
+      return `
+        <span class="tick-svg tick-blue" title="Read" style="color:#34B7F1 !important; display:inline-flex; align-items:center;">
+          <svg viewBox="0 0 16 11" width="16" height="11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 5.5L4.5 9L11 1.5" stroke="#34B7F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 5.5L8.5 9L15 1.5" stroke="#34B7F1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      `;
+    } else if (isDelivered) {
+      return `
+        <span class="tick-svg tick-gray" title="Delivered" style="color:#8696A0 !important; display:inline-flex; align-items:center;">
+          <svg viewBox="0 0 16 11" width="16" height="11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 5.5L4.5 9L11 1.5" stroke="#8696A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 5.5L8.5 9L15 1.5" stroke="#8696A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      `;
+    } else {
+      return `
+        <span class="tick-svg tick-gray" title="Sent" style="color:#8696A0 !important; display:inline-flex; align-items:center;">
+          <svg viewBox="0 0 12 11" width="12" height="11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 5.5L4.5 9L11 1.5" stroke="#8696A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      `;
+    }
+  }
+
+
+
+  function getLocalConnections() {
+
+    try {
+
+      return JSON.parse(localStorage.getItem('travelverse_connections') || '[]');
+
+    } catch(e) { return []; }
+
+  }
+
+
+
+  async function loadBuddiesFromBackendAndLocal() {
+
+    const user = getCurrentUser();
+
+    if (!user.email) return;
+
+
+
+    let buddiesList = [];
+
+    const myEmail = user.email.toLowerCase();
+
+    const myUser = user.username.toLowerCase();
+
+
+
+    function isDuplicateBuddy(bEmail, bUser) {
+
+      const e = (bEmail || '').toLowerCase().trim();
+
+      const u = (bUser || '').toLowerCase().trim();
+
+      return buddiesList.some(b => {
+
+        const be = (b.email || '').toLowerCase().trim();
+
+        const bu = (b.username || '').toLowerCase().trim();
+
+        if (e && be && e === be) return true;
+
+        if (u && bu && u === bu) return true;
+
+        if (e && bu && e === bu) return true;
+
+        if (u && be && u === be) return true;
+
+        return false;
+
+      });
+
+    }
+
+
+
+    // 1. Backend sync
+
+    try {
+
+      const res = await fetch(`${API_BASE}/user-connections/${encodeURIComponent(user.email)}`);
+
+      if (res.ok) {
+
+        const data = await res.json();
+
+        if (data.status === 'success' && Array.isArray(data.accepted_buddies)) {
+
+          data.accepted_buddies.forEach(ab => {
+
+            const bEmail = (ab.buddy_email || '').toLowerCase().trim();
+
+            const bUser = (ab.buddy_username || '').trim();
+
+            const bName = ab.buddy_name || bUser || bEmail;
+
+            const bPic = ab.buddy_pic || '';
+
+            const bDest = ab.destination || 'Explorer';
+
+            if (bEmail && !isDuplicateBuddy(bEmail, bUser)) {
+
+              buddiesList.push({
+
+                email: bEmail,
+
+                name: bName,
+
+                username: bUser,
+
+                pic: bPic,
+
+                destination: bDest,
+
+                isAgent: !!ab.is_agent,
+
+                unread_count: ab.unread_count || 0
+
+              });
+
+            }
+
+          });
+
+        }
+
+      }
+
+    } catch(e) {
+
+      console.log("Backend offline, loading local connections.");
+
+    }
+
+
+
+    // 2. Local Storage fallback / merge
+
+    const connections = getLocalConnections();
+
+    connections.forEach(c => {
+
+      if ((c.status || 'pending').toLowerCase() === 'accepted') {
+
+        const s = (c.sender_email || '').toLowerCase().trim();
+
+        const r = (c.receiver_email || '').toLowerCase().trim();
+
+        const isMeSender = s === myEmail || (myUser && s === myUser);
+
+        const buddyEmail = isMeSender ? r : s;
+
+        const buddyName = isMeSender ? (c.receiver_name || r) : (c.sender_name || s);
+
+        const buddyPic = isMeSender ? c.receiver_pic : c.sender_pic;
+
+        const buddyUsername = isMeSender ? c.receiver_username : c.sender_username;
+
+        const dest = c.destination || 'Explorer';
+
+
+
+        if (buddyEmail && !isDuplicateBuddy(buddyEmail, buddyUsername)) {
+
+          buddiesList.push({
+
+            email: buddyEmail,
+
+            name: buddyName,
+
+            username: buddyUsername || '',
+
+            pic: buddyPic || '',
+
+            destination: dest,
+
+            isAgent: false
+
+          });
+
+        }
+
+      }
+
+    });
+
+
+
+    travelBuddies = buddiesList;
+
+    // 2. Fetch User Trip Group Chats from MongoDB backend
+    try {
+      const tripsRes = await fetch(`${API_BASE}/user-trip-chats/${encodeURIComponent(user.email)}`);
+      if (tripsRes.ok) {
+        const tripsData = await tripsRes.json();
+        if (tripsData.status === 'success' && Array.isArray(tripsData.trip_chats)) {
+          userTripGroups = tripsData.trip_chats;
+          const badgeEl = document.getElementById('trip-badge-count');
+          if (badgeEl) {
+            badgeEl.textContent = userTripGroups.length;
+            badgeEl.style.display = userTripGroups.length > 0 ? 'inline-block' : 'none';
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('Could not load user trip chats:', e);
+    }
+
+    renderSidebarBuddies();
+
+    // Check if user already had a selected trip or buddy
+    const savedChatType = localStorage.getItem('tv_active_chat_type') || '';
+    const savedTripId = localStorage.getItem('tv_active_trip_id') || '';
+    const savedBuddyEmail = localStorage.getItem('tv_active_buddy_email') || '';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramTripId = urlParams.get('trip_id') || urlParams.get('trip');
+    const paramBuddy = (urlParams.get('buddy') || urlParams.get('email') || urlParams.get('chat_buddy') || '').trim();
+
+    // 1. If explicit URL param for trip_id, select that trip
+    if (paramTripId) {
+      const targetTrip = userTripGroups.find(t => String(t.trip_id) === String(paramTripId));
+      if (targetTrip) {
+        selectTripGroup(targetTrip);
+        return;
+      }
+    }
+
+    // 2. If activeTripGroup is already selected, keep it without disruption!
+    if (activeChatMode === 'trip' && activeTripGroup) {
+      const stillTrip = userTripGroups.find(t => String(t.trip_id) === String(activeTripGroup.trip_id));
+      if (stillTrip) {
+        activeTripGroup = stillTrip;
+        renderSidebarBuddies();
+        return;
+      }
+    }
+
+    // 3. If activeBuddy is already selected, keep it without disruption!
+    if (activeChatMode === 'direct' && activeBuddy) {
+      const stillBuddy = travelBuddies.find(b => b.email && b.email.toLowerCase() === activeBuddy.email.toLowerCase());
+      if (stillBuddy) {
+        activeBuddy = stillBuddy;
+        renderSidebarBuddies();
+        return;
+      }
+    }
+
+    // 4. If explicit URL param for buddy
+    if (paramBuddy) {
+      let targetBuddy = travelBuddies.find(b => 
+        (b.email && b.email.toLowerCase() === paramBuddy.toLowerCase()) || 
+        (b.username && b.username.toLowerCase() === paramBuddy.toLowerCase()) ||
+        (b.name && b.name.toLowerCase().includes(paramBuddy.toLowerCase()))
+      );
+      if (!targetBuddy) {
+        const paramName = urlParams.get('name') || urlParams.get('agent_name') || paramBuddy.split('@')[0];
+        const paramPic = urlParams.get('pic') || urlParams.get('avatar') || '';
+        const paramAgency = urlParams.get('agency') || '';
+        const paramDest = urlParams.get('dest') || (paramAgency ? `Agent • ${paramAgency}` : 'Verified Travel Agent');
+        targetBuddy = {
+          email: paramBuddy,
+          name: paramName,
+          username: paramName,
+          pic: paramPic,
+          destination: paramDest,
+          isAgent: true
+        };
+        travelBuddies.unshift(targetBuddy);
+      }
+      selectBuddy(targetBuddy);
+      return;
+    }
+
+    // 5. If saved preference in session
+    if (savedChatType === 'trip' && savedTripId) {
+      const targetTrip = userTripGroups.find(t => String(t.trip_id) === String(savedTripId));
+      if (targetTrip) {
+        selectTripGroup(targetTrip);
+        return;
+      }
+    }
+
+    if (savedBuddyEmail) {
+      const targetBuddy = travelBuddies.find(b => b.email && b.email.toLowerCase() === savedBuddyEmail.toLowerCase());
+      if (targetBuddy) {
+        selectBuddy(targetBuddy);
+        return;
+      }
+    }
+
+    // 6. Default fallback: select first trip group or buddy
+    if (userTripGroups.length > 0) {
+      selectTripGroup(userTripGroups[0]);
+    } else if (travelBuddies.length > 0) {
+      selectBuddy(travelBuddies[0]);
+    } else {
+      renderEmptyChatState();
+    }
+  }
+
+
+
+  window.switchChatFilter = function(filter) {
+    currentChatFilter = filter;
+    ['all', 'direct', 'trips'].forEach(f => {
+      const btn = document.getElementById(`tab-chat-${f}`);
+      if (btn) {
+        if (f === filter) btn.classList.add('active');
+        else btn.classList.remove('active');
+      }
+    });
+    renderSidebarBuddies();
+  };
+
+  function renderSidebarBuddies() {
+    const container = document.getElementById('buddies-list-container');
+    if (!container) return;
+
+    const query = (document.getElementById('buddy-search-input')?.value || '').trim().toLowerCase();
+
+    // Filter trip groups
+    const filteredTrips = userTripGroups.filter(t =>
+      !query ||
+      (t.title && t.title.toLowerCase().includes(query)) ||
+      (t.destination && t.destination.toLowerCase().includes(query)) ||
+      (t.agent_name && t.agent_name.toLowerCase().includes(query)) ||
+      (t.agency_name && t.agency_name.toLowerCase().includes(query))
+    );
+
+    // Filter direct buddies
+    const filteredBuddies = travelBuddies.filter(b => 
+      !query || 
+      b.name.toLowerCase().includes(query) || 
+      b.email.toLowerCase().includes(query) || 
+      (b.username && b.username.toLowerCase().includes(query)) ||
+      (b.destination && b.destination.toLowerCase().includes(query))
+    );
+
+    let html = '';
+
+    // Render Trip Groups
+    if (currentChatFilter === 'trips' || currentChatFilter === 'all') {
+      if (currentChatFilter === 'all' && filteredTrips.length > 0) {
+        html += `<div class="sidebar-section-title">🎒 Trip Group Chats (${filteredTrips.length})</div>`;
+      }
+      if (currentChatFilter === 'trips' && filteredTrips.length === 0) {
+        html += `<div style="padding:26px 16px; text-align:center; color:var(--ink-soft); font-size:13px;">No enrolled group trips found. When you join any group expedition, its chat will appear here automatically!</div>`;
+      } else {
+        html += filteredTrips.map(trip => {
+          const isActive = (activeChatMode === 'trip' && activeTripGroup && String(activeTripGroup.trip_id) === String(trip.trip_id));
+          return `
+            <div class="buddy-item ${isActive ? 'active' : ''}" onclick="selectTripGroup('${trip.trip_id}')">
+              <div class="buddy-avatar-wrap" style="border-radius:12px; background:#123A42;">
+                <img src="${trip.cover_image}" alt="${escapeHtml(trip.title)}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=400&q=80';">
+              </div>
+              <div class="buddy-info">
+                <div class="buddy-name-row">
+                  <span class="buddy-name" title="${escapeHtml(trip.title)}">🎒 ${escapeHtml(trip.title)}</span>
+                  <span style="font-size:10.5px; color:var(--ink-soft);">${escapeHtml(trip.last_message_time || '')}</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:2px;">
+                  <span class="buddy-dest" style="color:var(--accent-sunset); font-weight:600; font-size:11.5px;">Host: ${escapeHtml(trip.agent_name)}</span>
+                  <span style="font-size:10.5px; background:rgba(0,0,0,0.06); padding:2px 7px; border-radius:10px; color:var(--ink-soft); font-weight:600;">👥 ${trip.members_count || 0} Passengers</span>
+                </div>
+                <div style="font-size:12px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px;">
+                  ${escapeHtml(trip.last_message || 'Welcome to the trip group!')}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Render Direct Chats
+    if (currentChatFilter === 'direct' || currentChatFilter === 'all') {
+      if (currentChatFilter === 'all' && filteredBuddies.length > 0) {
+        html += `<div class="sidebar-section-title">💬 Direct Chats (${filteredBuddies.length})</div>`;
+      }
+      if (currentChatFilter === 'direct' && filteredBuddies.length === 0) {
+        html += `<div style="padding:26px 16px; text-align:center; color:var(--ink-soft); font-size:13px;">${query ? 'No matching buddies found.' : 'No accepted travel buddies yet. Connect with travellers to start chatting!'}</div>`;
+      } else {
+        html += filteredBuddies.map(b => {
+          const isActive = (activeChatMode === 'direct' && activeBuddy && activeBuddy.email === b.email);
+          const initial = (b.name || 'T').charAt(0).toUpperCase();
+          const avatarHtml = b.pic ? `<img src="${b.pic}" alt="${b.name}">` : initial;
+          const isAgent = b.isAgent || (b.destination && b.destination.includes('Agent'));
+          const handleHtml = (!isAgent && b.username && b.username.toLowerCase() !== b.name.toLowerCase()) ? `<div style="font-size:11.5px; color:var(--ink-soft); margin-top:-1px;">@${b.username}</div>` : '';
+          const destText = isAgent ? 'Verified Agent' : (b.destination || 'Explorer');
+          const unreadCount = (!isActive && b.unread_count > 0) ? b.unread_count : 0;
+          const unreadBadgeHtml = unreadCount > 0 ? `<span class="buddy-unread-badge">${unreadCount}</span>` : '';
+
+          return `
+            <div class="buddy-item ${isActive ? 'active' : ''}" onclick="switchBuddy('${b.email}')">
+              <div class="buddy-avatar-wrap">${avatarHtml}</div>
+              <div class="buddy-info">
+                <div class="buddy-name-row">
+                  <span class="buddy-name">${b.name}</span>
+                  ${unreadBadgeHtml}
+                </div>
+                ${handleHtml}
+                <div class="buddy-dest">📍 ${destText}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    if (!html) {
+      html = `<div style="padding:30px 16px; text-align:center; color:var(--ink-soft); font-size:13.5px;">No chats found.</div>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  async function markMessagesAsRead() {
+    if (!activeBuddy) return;
+    const user = getCurrentUser();
+    if (!user.email) return;
+
+    try {
+      await fetch(`${API_BASE}/mark-messages-read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_email: user.email,
+          buddy_email: activeBuddy.email
+        })
+      });
+    } catch(e) {}
+  }
+
+  window.switchBuddy = function(email) {
+    const b = travelBuddies.find(item => item.email === email);
+    if (b) selectBuddy(b);
+  };
+
+  window.selectTripGroup = function(tripOrId) {
+    let trip = tripOrId;
+    if (typeof tripOrId === 'number' || typeof tripOrId === 'string') {
+      trip = userTripGroups.find(t => String(t.trip_id) === String(tripOrId));
+    }
+    if (!trip) return;
+
+    activeChatMode = 'trip';
+    activeTripGroup = trip;
+    activeBuddy = null;
+    if (window.resetAiStarters) window.resetAiStarters();
+
+    try {
+      localStorage.setItem('tv_active_chat_type', 'trip');
+      localStorage.setItem('tv_active_trip_id', String(trip.trip_id));
+      localStorage.removeItem('tv_active_buddy_email');
+    } catch(e) {}
+
+    try {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('trip_id', String(trip.trip_id));
+      newUrl.searchParams.delete('buddy');
+      newUrl.searchParams.delete('email');
+      newUrl.searchParams.delete('chat_buddy');
+      newUrl.searchParams.delete('name');
+      newUrl.searchParams.delete('agency');
+      window.history.replaceState(null, '', newUrl.toString());
+    } catch(e) {}
+
+    renderSidebarBuddies();
+    renderChatPane();
+    lastRenderedMessageSignature = '';
+    fetchAndRenderMessages();
+    scheduleNextPoll(2000);
+  };
+
+  function selectBuddy(buddyObj) {
+    if (!buddyObj) return;
+    activeChatMode = 'direct';
+    activeBuddy = buddyObj;
+    activeTripGroup = null;
+    if (window.resetAiStarters) window.resetAiStarters();
+
+    try {
+      localStorage.setItem('tv_active_chat_type', 'direct');
+      localStorage.setItem('tv_active_buddy_email', buddyObj.email);
+      localStorage.removeItem('tv_active_trip_id');
+    } catch(e) {}
+
+    try {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('buddy', buddyObj.email);
+      newUrl.searchParams.delete('trip_id');
+      newUrl.searchParams.delete('trip');
+      newUrl.searchParams.delete('name');
+      newUrl.searchParams.delete('agency');
+      newUrl.searchParams.delete('pic');
+      newUrl.searchParams.delete('dest');
+      newUrl.searchParams.delete('email');
+      window.history.replaceState(null, '', newUrl.toString());
+    } catch(e) {}
+
+    if (buddyObj) buddyObj.unread_count = 0;
+    renderSidebarBuddies();
+    renderChatPane();
+    markMessagesAsRead();
+    lastRenderedMessageSignature = '';
+    fetchAndRenderMessages();
+    scheduleNextPoll(2000);
+  }
+
+
+
+  function renderEmptyChatState() {
+
+    const mainPane = document.getElementById('chat-main-pane');
+
+    if (!mainPane) return;
+
+
+
+    mainPane.innerHTML = `
+
+      <div class="empty-chat-pane">
+
+        <div class="empty-chat-icon">💬</div>
+
+        <h2 class="empty-chat-title">Direct Travel Messaging</h2>
+
+        <p class="empty-chat-sub">Connect with verified travellers and expert travel agents on TravelVerse. Select an agent or accepted buddy to start chatting!</p>
+
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+
+          <a href="agent.html" style="background:#17242A; color:#FDEBD3; text-decoration:none; padding:12px 22px; border-radius:30px; font-weight:700; font-size:13.5px;">Browse Travel Agents 👥</a>
+
+          <a href="companions.html" style="background:linear-gradient(135deg, var(--accent-sunset), var(--accent-coral)); color:#fff; text-decoration:none; padding:12px 22px; border-radius:30px; font-weight:700; font-size:13.5px; box-shadow:0 6px 18px rgba(232,135,74,0.3);">Find Companions ✈️</a>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+
+  function renderChatPane() {
+
+    const mainPane = document.getElementById('chat-main-pane');
+
+    if (!mainPane) return;
+
+    // A. TRIP GROUP CHAT
+    if (activeChatMode === 'trip' && activeTripGroup) {
+      const trip = activeTripGroup;
+      const isAdminMe = trip.is_admin;
+
+      mainPane.innerHTML = `
+        <div class="chat-header">
+          <div class="chat-header-user">
+            <div class="header-avatar" style="border-radius:12px; overflow:hidden;">
+              <img src="${trip.cover_image}" alt="${escapeHtml(trip.title)}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=400&q=80';">
+            </div>
+            <div>
+              <div class="header-name" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                🎒 ${escapeHtml(trip.title)}
+                ${isAdminMe ? '<span style="background:linear-gradient(135deg, #FFB300, #F57C00); color:#fff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:10px;">Host / Admin</span>' : '<span style="background:rgba(255,255,255,0.15); color:#FDEBD3; font-size:10px; font-weight:600; padding:2px 7px; border-radius:10px;">🎒 Group Expedition Chat</span>'}
+              </div>
+              <div class="header-sub">
+                Host: <strong style="color:var(--star);">${escapeHtml(trip.agent_name)}</strong> (${escapeHtml(trip.agency_name)}) • 👥 ${trip.members_count || 0} Passengers • 📍 ${escapeHtml(trip.destination || 'Expedition')}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn-start-ai-header" onclick="startWithAiIcebreaker()" title="Generate group starter message with AI" style="background:linear-gradient(135deg, #E8874A, #D6555A) !important; color:#FFFFFF !important; border:none !important; font-size:12.5px !important; font-weight:700 !important; padding:7px 16px !important; border-radius:20px !important; cursor:pointer !important; display:inline-flex !important; align-items:center !important; gap:7px !important; box-shadow:0 3px 10px rgba(232,135,74,0.45) !important;">
+              <span class="sparkle-anim" style="font-size:14px !important;">✨</span> <span style="color:#FFFFFF !important; font-weight:700 !important;">Start with AI</span>
+            </button>
+            <button type="button" onclick="openTripRosterModal()" style="background:#FAF5EB; border:1.5px solid var(--line); color:var(--ink); font-size:12px; font-weight:700; padding:7px 14px; border-radius:20px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04); transition:all .2s ease;">
+              👥 Group Roster & Info
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-thread" id="chat-thread-container">
+          <div style="text-align:center; padding:30px 10px; color:var(--ink-soft); font-size:13.5px;">Loading trip discussion...</div>
+        </div>
+
+        <div class="chat-footer-wrapper">
+          <div class="emoji-picker-popover" id="emoji-picker-popover" style="display:none;">
+            <div class="emoji-picker-header">
+              <div class="emoji-tabs">
+                <button type="button" class="emoji-tab-btn active" onclick="switchEmojiCategory('travel', this)">✈️ Travel</button>
+                <button type="button" class="emoji-tab-btn" onclick="switchEmojiCategory('smileys', this)">😀 Faces</button>
+                <button type="button" class="emoji-tab-btn" onclick="switchEmojiCategory('gestures', this)">👍 Hands</button>
+                <button type="button" class="emoji-tab-btn" onclick="switchEmojiCategory('objects', this)">🍕 Fun</button>
+              </div>
+              <button type="button" class="emoji-close-btn" onclick="closeEmojiPicker()">✕</button>
+            </div>
+            <div class="emoji-grid" id="emoji-grid-container"></div>
+          </div>
+
+          <div class="chat-footer">
+            <button type="button" class="btn-emoji-trigger" id="emoji-picker-btn" title="Add emoji" onclick="toggleEmojiPicker(event)">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="15" x2="15.01" y2="15"></line>
+              </svg>
+            </button>
+            <input type="text" id="chat-text-input" placeholder="Message ${escapeHtml(trip.title)}..." autocomplete="off">
+            <button type="button" class="btn-send" id="chat-send-btn" onclick="sendMessage()">Send ✈️</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('chat-text-input')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      setTimeout(() => { document.getElementById('chat-text-input')?.focus(); }, 100);
+      return;
+    }
+
+    // B. DIRECT BUDDY CHAT
+    if (!activeBuddy) {
+      renderEmptyChatState();
+      return;
+    }
+
+
+
+    const initial = (activeBuddy.name || 'T').charAt(0).toUpperCase();
+
+    const avatarHtml = activeBuddy.pic ? `<img src="${activeBuddy.pic}" alt="${activeBuddy.name}">` : initial;
+
+    const isAgent = activeBuddy.isAgent || (activeBuddy.destination && activeBuddy.destination.includes('Agent'));
+
+    // Remove vani_travels handle for agents in header
+
+    const handleHtml = (!isAgent && activeBuddy.username && activeBuddy.username.toLowerCase() !== activeBuddy.name.toLowerCase()) 
+
+      ? `<span style="font-size:13px; font-weight:500; opacity:0.8; margin-left:4px;">(@${activeBuddy.username})</span>` 
+
+      : '';
+
+
+
+    mainPane.innerHTML = `
+
+      <div class="chat-header">
+
+        <div class="chat-header-user">
+
+          <div class="header-avatar">${avatarHtml}</div>
+
+          <div>
+
+            <div class="header-name">
+
+              ${activeBuddy.name} ${handleHtml}
+
+              ${isAgent ? '<span style="background:linear-gradient(135deg, var(--accent-sunset), var(--accent-coral)); color:#fff; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px; margin-left:6px; letter-spacing:0.3px;">Verified Travel Agent</span>' : ''}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" class="btn-start-ai-header" onclick="startWithAiIcebreaker()" title="Generate message suggestion with AI" style="background:linear-gradient(135deg, #E8874A, #D6555A) !important; color:#FFFFFF !important; border:none !important; font-size:12.5px !important; font-weight:700 !important; padding:7px 16px !important; border-radius:20px !important; cursor:pointer !important; display:inline-flex !important; align-items:center !important; gap:7px !important; box-shadow:0 3px 10px rgba(232,135,74,0.45) !important;">
+            <span class="sparkle-anim" style="font-size:14px !important;">✨</span> <span style="color:#FFFFFF !important; font-weight:700 !important;">Start with AI</span>
+          </button>
+          ${isAgent ? `
+            <div>
+              <button type="button" onclick="openAgentProfileModal()" style="background:#FAF5EB; border:1.5px solid var(--line); color:var(--ink); font-size:12px; font-weight:700; padding:7px 15px; border-radius:20px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04); transition:all .2s ease;">
+                🏢 View Agent Profile
+              </button>
+            </div>
+          ` : ''}
+        </div>
+
+      </div>
+
+
+
+      <div class="chat-thread" id="chat-thread-container">
+
+        <div style="text-align:center; padding:30px 10px; color:var(--ink-soft); font-size:13.5px;">Loading chat messages...</div>
+
+      </div>
+
+
+
+      <div class="chat-footer-wrapper">
+
+        <div class="emoji-picker-popover" id="emoji-picker-popover" style="display:none;">
+
+          <div class="emoji-picker-header">
+
+            <div class="emoji-tabs">
+
+              <button type="button" class="emoji-tab-btn active" onclick="switchEmojiCategory('travel', this)">✈️ Travel</button>
+
+              <button type="button" class="emoji-tab-btn" onclick="switchEmojiCategory('smileys', this)">😀 Faces</button>
+
+              <button type="button" class="emoji-tab-btn" onclick="switchEmojiCategory('gestures', this)">👍 Hands</button>
+
+              <button type="button" class="emoji-tab-btn" onclick="switchEmojiCategory('objects', this)">🍕 Fun</button>
+
+            </div>
+
+            <button type="button" class="emoji-close-btn" onclick="closeEmojiPicker()">✕</button>
+
+          </div>
+
+          <div class="emoji-grid" id="emoji-grid-container"></div>
+
+        </div>
+
+
+
+        <div class="chat-footer">
+
+          <button type="button" class="btn-emoji-trigger" id="emoji-picker-btn" title="Add emoji" onclick="toggleEmojiPicker(event)">
+
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+              <circle cx="12" cy="12" r="10"></circle>
+
+              <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+
+              <line x1="9" y1="9" x2="9.01" y2="9"></line>
+
+              <line x1="15" y1="9" x2="15.01" y2="9"></line>
+
+            </svg>
+
+          </button>
+
+          <input type="text" id="chat-text-input" placeholder="Type a message to plan your trip..." autocomplete="off">
+
+          <button type="button" class="btn-send" id="chat-send-btn" onclick="sendMessage()">Send ✈️</button>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+
+    document.getElementById('chat-text-input')?.addEventListener('keydown', (e) => {
+
+      if (e.key === 'Enter') {
+
+        e.preventDefault();
+
+        sendMessage();
+
+      }
+
+    });
+
+
+
+    setTimeout(() => {
+
+      document.getElementById('chat-text-input')?.focus();
+
+    }, 100);
+
+  }
+
+  let currentAiStarters = [];
+  let seenAiStarterTexts = new Set();
+  let isFetchingAiStarters = false;
+
+  async function fetchAiStartersBatch() {
+    if (isFetchingAiStarters) return [];
+    isFetchingAiStarters = true;
+    try {
+      const user = getCurrentUser();
+      if (!user || !user.email) return [];
+      
+      const isTrip = (activeChatMode === 'trip' && activeTripGroup);
+      const targetEmail = isTrip ? (activeTripGroup.host_email || 'group_trip@travelverse.com') : (activeBuddy ? activeBuddy.email : '');
+      if (!targetEmail) return [];
+
+      const targetDest = isTrip ? (activeTripGroup.destination || activeTripGroup.title || '') : (activeBuddy ? (activeBuddy.destination || '') : '');
+      const isAg = !isTrip && activeBuddy && (activeBuddy.isAgent || (activeBuddy.destination && activeBuddy.destination.includes('Agent')));
+      const roleParam = isTrip ? 'group_trip' : (isAg ? 'client_to_agent' : 'traveler');
+      const seedParam = Math.floor(Math.random() * 1000000);
+      
+      const url = `${API_BASE}/chat-icebreakers/${encodeURIComponent(user.email)}/${encodeURIComponent(targetEmail)}?vibe=all&seed=${seedParam}&dest=${encodeURIComponent(targetDest)}&role=${roleParam}`;
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data && Array.isArray(data.icebreakers)) ? data.icebreakers : [];
+    } catch(e) {
+      console.warn('[AI ICEBREAKER] fetch failed:', e);
+      return [];
+    } finally {
+      isFetchingAiStarters = false;
+    }
+  }
+
+  window.startWithAiIcebreaker = async function() {
+    const user = getCurrentUser();
+    if (!user || !user.email) return;
+    const isTrip = (activeChatMode === 'trip' && activeTripGroup);
+    if (!isTrip && (!activeBuddy || !activeBuddy.email)) return;
+
+    const input = document.getElementById('chat-text-input');
+    if (!input) return;
+
+    const headerBtns = document.querySelectorAll('.btn-start-ai-header');
+
+    // 1. Check unshown starters in memory
+    let available = currentAiStarters.filter(item => item && item.text && !seenAiStarterTexts.has(item.text));
+
+    // 2. If pool is empty or dry, fetch fresh batch from backend
+    if (available.length === 0) {
+      headerBtns.forEach(b => {
+        b.disabled = true;
+        b.style.opacity = '0.7';
+      });
+
+      const freshBatch = await fetchAiStartersBatch();
+
+      headerBtns.forEach(b => {
+        b.disabled = false;
+        b.style.opacity = '1';
+      });
+
+      if (freshBatch && freshBatch.length > 0) {
+        freshBatch.forEach(item => {
+          if (!currentAiStarters.some(existing => existing.text === item.text)) {
+            currentAiStarters.push(item);
+          }
+        });
+      }
+      available = currentAiStarters.filter(item => item && item.text && !seenAiStarterTexts.has(item.text));
+    }
+
+    // 3. If all loaded items in this session were already shown, reset seen cache and re-shuffle
+    if (available.length === 0 && currentAiStarters.length > 0) {
+      seenAiStarterTexts.clear();
+      available = currentAiStarters;
+      fetchAiStartersBatch().then(more => {
+        if (more && more.length > 0) {
+          more.forEach(item => {
+            if (!currentAiStarters.some(existing => existing.text === item.text)) {
+              currentAiStarters.push(item);
+            }
+          });
+        }
+      });
+    }
+
+    if (available.length === 0) return;
+
+    // 4. Pick next unshown starter
+    const picked = available[0];
+    seenAiStarterTexts.add(picked.text);
+
+    // 5. Pre-fetch next batch in background if remaining unshown is low
+    if (available.length <= 3 && !isFetchingAiStarters) {
+      fetchAiStartersBatch().then(more => {
+        if (more && more.length > 0) {
+          more.forEach(item => {
+            if (!currentAiStarters.some(existing => existing.text === item.text)) {
+              currentAiStarters.push(item);
+            }
+          });
+        }
+      });
+    }
+
+    // 6. Insert directly into chat input bar
+    input.value = picked.text;
+    input.focus();
+    input.classList.remove('highlight-input');
+    void input.offsetWidth;
+    input.classList.add('highlight-input');
+  };
+
+  window.resetAiStarters = function() {
+    currentAiStarters = [];
+    seenAiStarterTexts.clear();
+    isFetchingAiStarters = false;
+  };
+
+  function stopChatPolling() {
+
+    if (chatPollTimer) {
+
+      clearTimeout(chatPollTimer);
+
+      chatPollTimer = null;
+
+    }
+
+  }
+
+
+
+  function scheduleNextPoll(delayMs = 2500) {
+
+    stopChatPolling();
+
+    chatPollTimer = setTimeout(async () => {
+
+      const hasActive = (activeChatMode === 'trip' && activeTripGroup) || (activeChatMode === 'direct' && activeBuddy);
+      if (!isPollFetching && hasActive && !document.hidden) {
+
+        isPollFetching = true;
+
+        try {
+
+          await fetchAndRenderMessages();
+
+          refreshUnreadCounts();
+
+        } catch(e) {}
+
+        finally {
+
+          isPollFetching = false;
+
+        }
+
+      }
+
+      scheduleNextPoll(2500);
+
+    }, delayMs);
+
+  }
+
+
+
+  function renderTripMessagesList(messages, user) {
+    const container = document.getElementById('chat-thread-container');
+    if (!container || !activeTripGroup) return;
+
+    if (!messages || messages.length === 0) {
+      if (container.querySelectorAll('.chat-bubble').length > 0) return;
+      lastRenderedMessageSignature = 'EMPTY_TRIP';
+      container.innerHTML = `
+        <div style="text-align:center; padding:30px 10px; color:var(--ink-soft); max-width:440px; margin:auto;">
+          <div style="font-size:38px; margin-bottom:8px;">🎒</div>
+          <div style="font-weight:700; font-size:16px; color:var(--ink); margin-bottom:4px;">Welcome to ${escapeHtml(activeTripGroup.title)}!</div>
+          <p style="font-size:13.5px; margin:0; line-height:1.5;">This is the shared expedition chat for all enrolled travellers and host agent ${escapeHtml(activeTripGroup.agent_name)}. Discuss dates, schedules, packing, and gear!</p>
+        </div>
+      `;
+      return;
+    }
+
+    const currentSig = messages.map(m => `${m.id || 0}_${m.message_text}`).join('|');
+    if (currentSig === lastRenderedMessageSignature) return;
+    lastRenderedMessageSignature = currentSig;
+
+    const myEmail = user.email.toLowerCase();
+    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 90;
+
+    let lastDateLabel = '';
+    const htmlParts = [];
+
+    messages.forEach(m => {
+      const dateLabel = getMessageDateGroup(m.created_at);
+      if (dateLabel !== lastDateLabel) {
+        htmlParts.push(`
+          <div class="chat-date-separator">
+            <span>${dateLabel}</span>
+          </div>
+        `);
+        lastDateLabel = dateLabel;
+      }
+
+      // Check system notice
+      if (m.sender_role === 'system' || m.is_system) {
+        htmlParts.push(`
+          <div class="chat-date-separator" style="margin:6px 0;">
+            <span style="background:rgba(232,135,74,0.14); color:var(--accent-sunset); border:1px solid rgba(232,135,74,0.22); text-transform:none; font-weight:600; font-size:11.5px; border-radius:14px; padding:4px 12px;">
+              ${escapeHtml(m.message_text)}
+            </span>
+          </div>
+        `);
+        return;
+      }
+
+      const sEmail = (m.sender_email || '').toLowerCase().trim();
+      const isMe = sEmail === myEmail;
+      const isAdmin = (m.sender_role === 'admin' || m.sender_role === 'agent' || sEmail === (activeTripGroup.agent_email || '').toLowerCase());
+      const timeStr = m.time_str || (m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now');
+      const tickHtml = isMe ? getWhatsAppTickHtml(m, user.email) : '';
+
+      let senderTagHtml = '';
+      if (!isMe) {
+        if (isAdmin) {
+          senderTagHtml = `
+            <div style="display:flex; align-items:center; gap:5px; margin-bottom:4px;">
+              <span style="font-size:12px; font-weight:700; color:#c45e1e;">${escapeHtml(m.sender_name || activeTripGroup.agent_name)}</span>
+              <span style="background:linear-gradient(135deg, #E8874A, #D6555A); color:#fff; font-size:9.5px; font-weight:700; padding:1px 6px; border-radius:8px;">Host / Admin</span>
+            </div>
+          `;
+        } else {
+          senderTagHtml = `
+            <div style="display:flex; align-items:center; gap:5px; margin-bottom:4px;">
+              <span style="font-size:12px; font-weight:700; color:#123A42;">🎒 ${escapeHtml(m.sender_name || 'Traveler')}</span>
+              <span style="background:rgba(0,0,0,0.06); color:var(--ink-soft); font-size:9.5px; font-weight:600; padding:1px 6px; border-radius:8px;">Passenger</span>
+            </div>
+          `;
+        }
+      } else if (isAdmin) {
+        senderTagHtml = `
+          <div style="font-size:10.5px; font-weight:700; color:var(--gold); margin-bottom:3px; display:flex; align-items:center; gap:4px;">
+            You (Trip Host & Admin)
+          </div>
+        `;
+      }
+
+      const announcementHtml = m.is_announcement ? `
+        <div class="announcement-banner">
+          📢 Host Announcement
+        </div>
+      ` : '';
+
+      htmlParts.push(`
+        <div class="message-row ${isMe ? 'me' : 'buddy'}" data-msg-id="${m.id}">
+          <div class="msg-bubble-wrap">
+            <div class="chat-bubble ${isAdmin && !isMe ? 'admin-bubble' : ''}" oncontextmenu="event.preventDefault(); openDeleteDialog(event, '${m.id}', ${isMe})">
+              ${senderTagHtml}
+              ${announcementHtml}
+              <span class="msg-text-content">${escapeHtml(m.message_text)}</span>
+              <span class="msg-meta">
+                <span>${timeStr}</span>
+                ${tickHtml}
+              </span>
+              <button type="button" class="msg-chevron-btn" title="Message options" onclick="openDeleteDialog(event, '${m.id}', ${isMe})">
+                <svg viewBox="0 0 10 6" width="10" height="6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 1l4 4 4-4"/>
+                </svg>
+              </button>
+            </div>
+            <button type="button" class="msg-quick-del-btn" title="Delete message" onclick="openDeleteDialog(event, '${m.id}', ${isMe})">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `);
+    });
+
+    container.innerHTML = htmlParts.join('');
+    if (isAtBottom) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }
+
+  window.openTripRosterModal = function() {
+    if (!activeTripGroup) return;
+    const modal = document.getElementById('trip-roster-modal');
+    if (!modal) return;
+
+    document.getElementById('roster-cover-img').src = activeTripGroup.cover_image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80';
+    document.getElementById('roster-trip-title').textContent = activeTripGroup.title;
+    document.getElementById('roster-trip-sub').textContent = `📍 ${activeTripGroup.destination} • 🗓️ ${activeTripGroup.dates}`;
+
+    document.getElementById('roster-agent-name').textContent = activeTripGroup.agent_name || 'Host Agent';
+    document.getElementById('roster-agency-name').textContent = activeTripGroup.agency_name || 'TravelVerse Verified Partner';
+    document.getElementById('roster-agent-contact').textContent = `✉️ ${activeTripGroup.agent_email || 'agent@travelverse.com'}`;
+
+    const tripLinkEl = document.getElementById('roster-trip-link');
+    if (tripLinkEl) {
+      tripLinkEl.href = `agent.html?agent_id=${activeTripGroup.trip_id || 1}&view=trips`;
+    }
+
+    const membersContainer = document.getElementById('roster-members-list');
+    const travelers = (activeTripMembers || []).filter(m => !m.is_host && m.role !== 'admin');
+    document.getElementById('roster-travelers-count').textContent = `${travelers.length} traveller${travelers.length === 1 ? '' : 's'}`;
+
+    if (travelers.length === 0) {
+      membersContainer.innerHTML = `
+        <div style="padding:16px; text-align:center; color:var(--ink-soft); font-size:13px; background:#fff; border-radius:10px; border:1px dashed var(--line);">
+          No other travellers enrolled yet. As soon as a traveller joins this group trip, they will automatically appear here!
+        </div>
+      `;
+    } else {
+      membersContainer.innerHTML = travelers.map(t => {
+        const initial = (t.name || 'T').charAt(0).toUpperCase();
+        return `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#fff; border-radius:12px; border:1px solid rgba(23,36,42,0.06);">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, var(--accent-sunset), var(--accent-coral)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">
+                ${initial}
+              </div>
+              <div>
+                <div style="font-weight:700; font-size:13.5px; color:var(--ink);">${escapeHtml(t.name)}</div>
+                <div style="font-size:11.5px; color:var(--ink-soft);">${escapeHtml(t.email)}</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <span style="font-size:10.5px; font-weight:700; background:#E8F5E9; color:#2E7D32; padding:2px 8px; border-radius:6px;">Enrolled</span>
+              ${t.booking_code ? `<div style="font-size:10.5px; font-family:'JetBrains Mono', monospace; color:var(--ink-soft); margin-top:2px;">${escapeHtml(t.booking_code)}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    modal.style.display = 'flex';
+  };
+
+  window.closeTripRosterModal = function() {
+    const modal = document.getElementById('trip-roster-modal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  function renderMessagesList(messages, user) {
+
+    const container = document.getElementById('chat-thread-container');
+
+    if (!container) return;
+
+
+
+    if (!messages || messages.length === 0) {
+
+      if (container.querySelectorAll('.chat-bubble').length > 0) return;
+
+      lastRenderedMessageSignature = 'EMPTY';
+
+      container.innerHTML = `
+
+        <div style="text-align:center; padding:40px 10px; color:var(--ink-soft);">
+
+          <div style="font-size:38px; margin-bottom:8px;">🗺️</div>
+
+          <div style="font-weight:700; font-size:16px; color:var(--ink); margin-bottom:4px;">Start planning your trip with ${activeBuddy.name}!</div>
+
+          <p style="font-size:13.5px; margin:0 0 16px 0; line-height:1.5;">Send a message to discuss itinerary details, flights, dates, or travel budget together.</p>
+
+          <button type="button" class="btn-start-ai-header" onclick="startWithAiIcebreaker()" style="background:linear-gradient(135deg, #E8874A, #D6555A) !important; color:#FFFFFF !important; border:none !important; font-size:13px !important; font-weight:700 !important; padding:8px 20px !important; border-radius:20px !important; cursor:pointer !important; display:inline-flex !important; align-items:center !important; gap:7px !important; box-shadow:0 3px 10px rgba(232,135,74,0.45) !important;">
+            <span class="sparkle-anim" style="font-size:14px !important;">✨</span> <span style="color:#FFFFFF !important; font-weight:700 !important;">Start with AI</span>
+          </button>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+
+    const currentSig = messages.map(m => `${m.id || 0}_${m.status || ''}_${m.message_text}`).join('|');
+
+    if (currentSig === lastRenderedMessageSignature) {
+
+      return;
+
+    }
+
+    lastRenderedMessageSignature = currentSig;
+
+
+
+    const myEmail = user.email.toLowerCase();
+
+    const myUser = user.username.toLowerCase();
+
+    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 90;
+
+
+
+    // Detect if buddy has responded to any message: any message preceding a buddy message is 100% read
+
+    let lastBuddyMsgIdx = -1;
+
+    for (let i = messages.length - 1; i >= 0; i--) {
+
+      const s = (messages[i].sender_email || '').toLowerCase().trim();
+
+      const isMe = s === myEmail || (myUser && s === myUser);
+
+      if (!isMe) {
+
+        lastBuddyMsgIdx = i;
+
+        break;
+
+      }
+
+    }
+
+
+
+    if (lastBuddyMsgIdx >= 0) {
+
+      messages.forEach((m, idx) => {
+
+        const s = (m.sender_email || '').toLowerCase().trim();
+
+        const isMe = s === myEmail || (myUser && s === myUser);
+
+        if (isMe && idx < lastBuddyMsgIdx) {
+
+          m.status = 'read';
+
+        }
+
+      });
+
+    }
+
+
+
+    let lastDateLabel = '';
+
+    const htmlParts = [];
+
+
+
+    messages.forEach(m => {
+
+      const dateLabel = getMessageDateGroup(m.created_at);
+
+      if (dateLabel !== lastDateLabel) {
+
+        htmlParts.push(`
+
+          <div class="chat-date-separator">
+
+            <span>${dateLabel}</span>
+
+          </div>
+
+        `);
+
+        lastDateLabel = dateLabel;
+
+      }
+
+
+
+      const s = (m.sender_email || '').toLowerCase().trim();
+
+      const isMe = s === myEmail || (myUser && s === myUser);
+
+      const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now';
+
+      const tickHtml = isMe ? getWhatsAppTickHtml(m, user.email) : '';
+
+
+
+      htmlParts.push(`
+
+        <div class="message-row ${isMe ? 'me' : 'buddy'}" data-msg-id="${m.id}">
+
+          <div class="msg-bubble-wrap">
+
+            <div class="chat-bubble" oncontextmenu="event.preventDefault(); openDeleteDialog(event, '${m.id}', ${isMe})">
+
+              <span class="msg-text-content">${escapeHtml(m.message_text)}</span>
+
+              <span class="msg-meta">
+
+                <span>${timeStr}</span>
+
+                ${tickHtml}
+
+              </span>
+
+              <button type="button" class="msg-chevron-btn" title="Message options" onclick="openDeleteDialog(event, '${m.id}', ${isMe})">
+
+                <svg viewBox="0 0 10 6" width="10" height="6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+
+                  <path d="M1 1l4 4 4-4"/>
+
+                </svg>
+
+              </button>
+
+            </div>
+
+            <button type="button" class="msg-quick-del-btn" title="Delete message" onclick="openDeleteDialog(event, '${m.id}', ${isMe})">
+
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                <polyline points="3 6 5 6 21 6"></polyline>
+
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+
+              </svg>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      `);
+
+    });
+
+
+
+    container.innerHTML = htmlParts.join('');
+
+
+
+    if (isAtBottom) {
+
+      container.scrollTop = container.scrollHeight;
+
+    }
+
+  }
+
+
+
+  async function fetchAndRenderMessages() {
+    const user = getCurrentUser();
+    if (!user.email) return;
+
+    if (activeChatMode === 'trip' && activeTripGroup) {
+      const tripId = activeTripGroup.trip_id;
+      const cacheKey = `tv_cache_trip_msgs_${tripId}`;
+      let messages = null;
+
+      try {
+        const res = await fetch(`${API_BASE}/get-trip-messages/${encodeURIComponent(tripId)}?user_email=${encodeURIComponent(user.email)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.messages)) {
+            messages = data.messages;
+            if (Array.isArray(data.members)) {
+              activeTripMembers = data.members;
+            }
+            try { localStorage.setItem(cacheKey, JSON.stringify(messages)); } catch(e) {}
+          }
+        }
+      } catch(e) {}
+
+      if (messages === null) {
+        try { messages = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch(err) { messages = null; }
+      }
+
+      if (messages && Array.isArray(messages)) {
+        let deletedIds = [];
+        try { deletedIds = JSON.parse(localStorage.getItem('tv_deleted_trip_msg_ids') || '[]'); } catch(e) {}
+        messages = messages.filter(m => m && !deletedIds.includes(String(m.id)));
+      }
+
+      renderTripMessagesList(messages, user);
+      return;
+    }
+
+    if (!activeBuddy) return;
+
+
+
+    const cacheKey = `tv_cache_msgs_${user.email.toLowerCase()}_${activeBuddy.email.toLowerCase()}`;
+
+    let messages = null;
+
+
+
+    try {
+
+      const res = await fetch(`${API_BASE}/get-buddy-messages/${encodeURIComponent(user.email)}/${encodeURIComponent(activeBuddy.email)}`);
+
+      if (res.ok) {
+
+        const data = await res.json();
+
+        if (data && Array.isArray(data.messages)) {
+
+          messages = data.messages;
+
+          try {
+
+            localStorage.setItem(cacheKey, JSON.stringify(messages));
+
+          } catch(e) {}
+
+        }
+
+      }
+
+    } catch(e) {
+
+      // Offline or temporary network glitch
+
+    }
+
+
+
+    if (messages === null) {
+
+      try {
+
+        messages = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+
+      } catch(err) { messages = null; }
+
+    }
+
+
+
+    if (messages && Array.isArray(messages)) {
+
+      let deletedIds = [];
+
+      try {
+
+        deletedIds = JSON.parse(localStorage.getItem('tv_deleted_msg_ids') || '[]');
+
+      } catch(e) {}
+
+      messages = messages.filter(m => m && !deletedIds.includes(String(m.id)) && !(m.message_text && m.message_text.includes('AI Advice')));
+
+    }
+
+
+
+    renderMessagesList(messages, user);
+
+  }
+
+
+
+  window.sendMessage = async function() {
+
+    const input = document.getElementById('chat-text-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+
+    if (typeof resetAiStarters === 'function') {
+      resetAiStarters();
+    }
+
+    const user = getCurrentUser();
+    if (!user.email) return;
+
+    if (activeChatMode === 'trip' && activeTripGroup) {
+      input.value = '';
+      const tripId = activeTripGroup.trip_id;
+      const isMeAdmin = user.email.toLowerCase() === (activeTripGroup.agent_email || '').toLowerCase() || activeTripGroup.is_admin;
+      const senderRole = isMeAdmin ? 'admin' : 'traveller';
+      const senderName = user.name || user.username || (isMeAdmin ? activeTripGroup.agent_name : user.email.split('@')[0]);
+
+      const tempId = 'temp_' + Date.now();
+      const tempMsg = {
+        id: tempId,
+        trip_id: tripId,
+        trip_title: activeTripGroup.title,
+        sender_email: user.email,
+        sender_name: senderName,
+        sender_role: senderRole,
+        message_text: text,
+        time_str: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        created_at: new Date().toISOString()
+      };
+
+      const cacheKey = `tv_cache_trip_msgs_${tripId}`;
+      let cachedMessages = [];
+      try {
+        cachedMessages = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+        if (!Array.isArray(cachedMessages)) cachedMessages = [];
+      } catch(e) { cachedMessages = []; }
+
+      cachedMessages.push(tempMsg);
+      try { localStorage.setItem(cacheKey, JSON.stringify(cachedMessages)); } catch(e) {}
+
+      lastRenderedMessageSignature = '';
+      renderTripMessagesList(cachedMessages, user);
+
+      const container = document.getElementById('chat-thread-container');
+      if (container) container.scrollTop = container.scrollHeight;
+
+      const payload = {
+        trip_id: tripId,
+        trip_title: activeTripGroup.title,
+        sender_email: user.email,
+        sender_name: senderName,
+        sender_role: senderRole,
+        message_text: text
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/send-trip-message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.message && data.message.id) {
+            const current = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+            const idx = current.findIndex(m => m.id === tempId);
+            if (idx !== -1) {
+              current[idx] = data.message;
+              localStorage.setItem(cacheKey, JSON.stringify(current));
+            }
+          }
+        }
+      } catch(e) {
+        console.warn('Error sending trip message:', e);
+      }
+
+      setTimeout(fetchAndRenderMessages, 350);
+      return;
+    }
+
+    if (!activeBuddy) return;
+
+    input.value = '';
+
+    const cacheKey = `tv_cache_msgs_${user.email.toLowerCase()}_${activeBuddy.email.toLowerCase()}`;
+
+    let cachedMessages = [];
+
+    try {
+
+      cachedMessages = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+
+      if (!Array.isArray(cachedMessages)) cachedMessages = [];
+
+    } catch(e) { cachedMessages = []; }
+
+
+
+    const tempId = 'temp_' + Date.now();
+
+    const tempMsg = {
+
+      id: tempId,
+
+      sender_email: user.email,
+
+      receiver_email: activeBuddy.email,
+
+      message_text: text,
+
+      status: 'delivered', // double gray ticks initially
+
+      created_at: new Date().toISOString()
+
+    };
+
+
+
+    cachedMessages.push(tempMsg);
+
+    try {
+
+      localStorage.setItem(cacheKey, JSON.stringify(cachedMessages));
+
+    } catch(e) {}
+
+
+
+    // 1. Immediately render to DOM (0ms response, authentic WhatsApp experience)
+
+    lastRenderedMessageSignature = '';
+
+    renderMessagesList(cachedMessages, user);
+
+
+
+    const container = document.getElementById('chat-thread-container');
+
+    if (container) {
+
+      container.scrollTop = container.scrollHeight;
+
+    }
+
+
+
+    const payload = {
+
+      sender_email: user.email,
+
+      receiver_email: activeBuddy.email,
+
+      message_text: text
+
+    };
+
+
+
+    // 2. Send in background asynchronously
+
+    try {
+
+      const res = await fetch(`${API_BASE}/send-buddy-message`, {
+
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify(payload)
+
+      });
+
+      if (res.ok) {
+
+        const data = await res.json();
+
+        if (data && data.message && data.message.id) {
+
+          const current = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+
+          const idx = current.findIndex(m => m.id === tempId);
+
+          if (idx !== -1) {
+
+            current[idx] = data.message;
+
+            localStorage.setItem(cacheKey, JSON.stringify(current));
+
+          }
+
+        }
+
+      }
+
+    } catch(e) {
+
+      console.warn("Offline message cached locally:", e);
+
+    }
+
+
+
+    // 3. Trigger quiet background refresh
+
+    setTimeout(fetchAndRenderMessages, 350);
+
+  };
+
+
+
+  document.getElementById('buddy-search-input')?.addEventListener('input', renderSidebarBuddies);
+
+
+
+  // AGENT PROFILE MODAL IN CHAT
+
+  async function openAgentProfileModal() {
+
+    if (!activeBuddy) return;
+
+
+
+    let agent = null;
+
+    try {
+
+      const res = await fetch(`${API_BASE}/agents`);
+
+      if (res.ok) {
+
+        const data = await res.json();
+
+        if (data && Array.isArray(data.agents)) {
+
+          agent = data.agents.find(a => (a.email || '').toLowerCase() === activeBuddy.email.toLowerCase());
+
+        }
+
+      }
+
+    } catch(e) {}
+
+
+
+    if (!agent) {
+
+      agent = {
+
+        id: 1,
+
+        agent_name: activeBuddy.name,
+
+        agency_name: activeBuddy.username || 'Verified Partner',
+
+        email: activeBuddy.email,
+
+        phone: activeBuddy.phone || '+91 98765 43210',
+
+        office_address: activeBuddy.office_address || 'Mall Road, Manali, Himachal Pradesh 175131, India',
+
+        rating: 4.98,
+
+        reviews_count: 64,
+
+        specialty: 'High-Altitude Expeditions & Custom Tours',
+
+        destinations: activeBuddy.destination || 'Explorer',
+
+        bio: 'Certified wilderness first responder and travel specialist on TravelVerse assisting travellers with custom itineraries and group adventures.',
+
+        experience_years: 8,
+
+        languages: 'English',
+
+        profile_pic: activeBuddy.pic
+
+      };
+
+    }
+
+
+
+    renderAgentProfileModalContent(agent);
+
+    document.getElementById('agent-profile-modal').style.display = 'flex';
+
+  }
+
+
+
+  function closeAgentProfileModal() {
+
+    const m = document.getElementById('agent-profile-modal');
+
+    if (m) m.style.display = 'none';
+
+  }
+
+
+
+  function renderAgentProfileModalContent(agent) {
+
+    const body = document.getElementById('agent-profile-modal-body');
+
+    if (!body) return;
+
+
+
+    body.innerHTML = `
+
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px;">
+
+        <img src="${agent.profile_pic || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'}" style="width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid var(--line); flex-shrink:0;">
+
+        <div style="flex:1; min-width:0;">
+
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+
+            <h2 style="font-family:'Fraunces', serif; font-size:20px; margin:0; color:var(--ink);">${agent.agent_name}</h2>
+
+            <span style="background:linear-gradient(135deg, var(--accent-sunset), var(--accent-coral)); color:#fff; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:12px;">Verified Agent</span>
+
+          </div>
+
+          <div style="font-size:13px; font-weight:600; color:var(--ink-soft); margin-top:2px;">${agent.agency_name || 'Travel Expedition Leader'}</div>
+
+          <div style="font-size:12.5px; font-weight:700; color:var(--accent-sunset); margin-top:4px;">
+
+            ★ ${Number(agent.rating || 5.0).toFixed(2)} <span style="color:var(--ink-soft); font-weight:500;">(${agent.reviews_count || 50} ratings) • ${agent.experience_years || 5} yrs exp</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <div style="background:#FAF5EB; border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px;">
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-soft); margin-bottom:10px; letter-spacing:0.5px;">Contact & Office Details</div>
+
+        
+
+        <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid rgba(23,36,42,0.06);">
+
+          <span style="font-size:18px;">🏢</span>
+
+          <div style="flex:1;">
+
+            <div style="font-size:11px; color:var(--ink-soft); font-weight:600;">Office Address</div>
+
+            <div style="font-size:13px; font-weight:600; color:var(--ink); line-height:1.4;">${agent.office_address || 'Mall Road, Manali, Himachal Pradesh, India'}</div>
+
+          </div>
+
+        </div>
+
+
+
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid rgba(23,36,42,0.06);">
+
+          <span style="font-size:18px;">📞</span>
+
+          <div style="flex:1;">
+
+            <div style="font-size:11px; color:var(--ink-soft); font-weight:600;">Contact Number</div>
+
+            <a href="tel:${(agent.phone || '+919876543210').replace(/\s+/g,'')}" style="font-size:13px; font-weight:700; color:var(--accent-sunset); text-decoration:none;">${agent.phone || '+91 98765 43210'}</a>
+
+          </div>
+
+          <a href="tel:${(agent.phone || '+919876543210').replace(/\s+/g,'')}" style="background:#fff; border:1px solid var(--line); color:var(--ink); padding:4px 10px; border-radius:14px; font-size:11.5px; text-decoration:none; font-weight:600;">Call</a>
+
+        </div>
+
+
+
+        <div style="display:flex; align-items:center; gap:10px;">
+
+          <span style="font-size:18px;">✉️</span>
+
+          <div style="flex:1;">
+
+            <div style="font-size:11px; color:var(--ink-soft); font-weight:600;">Official Mail ID</div>
+
+            <a href="mailto:${agent.email}" style="font-size:13px; font-weight:600; color:var(--ink); text-decoration:none;">${agent.email}</a>
+
+          </div>
+
+          <a href="mailto:${agent.email}" style="background:#fff; border:1px solid var(--line); color:var(--ink); padding:4px 10px; border-radius:14px; font-size:11.5px; text-decoration:none; font-weight:600;">Email</a>
+
+        </div>
+
+      </div>
+
+
+
+      <div style="margin-bottom:14px;">
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-soft); margin-bottom:4px;">About Agent</div>
+
+        <p style="font-size:13px; color:var(--ink); line-height:1.5; margin:0;">${agent.bio || 'Experienced travel specialist offering custom journeys and group adventures.'}</p>
+
+      </div>
+
+
+
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px;">
+
+        <span style="background:rgba(201,162,39,0.12); color:#8C6A08; padding:4px 10px; border-radius:12px; font-size:11.5px; font-weight:600;">📍 ${agent.destinations}</span>
+
+        <span style="background:rgba(23,36,42,0.06); color:var(--ink); padding:4px 10px; border-radius:12px; font-size:11.5px; font-weight:600;">🗣️ ${agent.languages || 'English'}</span>
+
+        <span style="background:rgba(23,36,42,0.06); color:var(--ink); padding:4px 10px; border-radius:12px; font-size:11.5px; font-weight:600;">🎯 ${agent.specialty}</span>
+
+      </div>
+
+
+
+      <div style="display:flex; gap:10px;">
+
+        <a href="agent.html?agent_id=${agent.id || 1}&view=trips" style="flex:1; background:linear-gradient(135deg, var(--accent-sunset), var(--accent-coral)); color:#fff; text-align:center; padding:12px; border-radius:30px; font-weight:700; font-size:13.5px; text-decoration:none; box-shadow:0 6px 18px rgba(232,135,74,0.3);">
+
+          🎒 View Group Trips
+
+        </a>
+
+        <a href="agent.html?agent_id=${agent.id || 1}&open=contact" style="flex:1; background:#17242A; color:#FDEBD3; text-align:center; padding:12px; border-radius:30px; font-weight:700; font-size:13.5px; text-decoration:none;">
+
+          🏢 View on Agents Page
+
+        </a>
+
+      </div>
+
+    `;
+
+  }
+
+
+
+  // Window & Document event listeners for instant read sync
+
+  window.addEventListener('focus', () => {
+
+    markMessagesAsRead();
+
+    fetchAndRenderMessages();
+
+    scheduleNextPoll(1500);
+
+  });
+
+  document.addEventListener('visibilitychange', () => {
+
+    if (!document.hidden) {
+
+      markMessagesAsRead();
+
+      fetchAndRenderMessages();
+
+      scheduleNextPoll(1500);
+
+    }
+
+  });
+
+  document.addEventListener('click', () => {
+
+    if (activeBuddy) {
+
+      markMessagesAsRead();
+
+    }
+
+  });
+
+
+
+  
+
+  // WHATSAPP DELETE MESSAGE LOGIC
+
+  let pendingDeleteId = null;
+
+  let pendingDeleteIsMe = false;
+
+
+
+  window.openDeleteDialog = function(e, msgId, isMe) {
+
+    if (e) {
+
+      e.stopPropagation();
+
+      e.preventDefault();
+
+    }
+
+    pendingDeleteId = msgId;
+
+    pendingDeleteIsMe = !!isMe;
+
+
+
+    const modal = document.getElementById('whatsapp-delete-modal');
+
+    const actions = document.getElementById('delete-modal-actions');
+
+    const desc = document.getElementById('delete-modal-desc');
+
+    if (!modal || !actions) {
+
+      console.error("Delete modal not found in DOM");
+
+      return;
+
+    }
+
+
+
+    if (isMe) {
+
+      if (desc) desc.textContent = "You can delete this message for everyone or just for yourself. It will be removed from the database.";
+
+      actions.innerHTML = `
+
+        <button type="button" class="btn-del-modal btn-del-everyone" onclick="confirmDeleteMessage('everyone')">Delete for everyone</button>
+
+        <button type="button" class="btn-del-modal btn-del-me" onclick="confirmDeleteMessage('me')">Delete for me</button>
+
+        <button type="button" class="btn-del-modal btn-del-cancel" onclick="closeDeleteModal()">Cancel</button>
+
+      `;
+
+    } else {
+
+      if (desc) desc.textContent = "This message will be deleted and removed from the database.";
+
+      actions.innerHTML = `
+
+        <button type="button" class="btn-del-modal btn-del-me" onclick="confirmDeleteMessage('me')">Delete for me</button>
+
+        <button type="button" class="btn-del-modal btn-del-cancel" onclick="closeDeleteModal()">Cancel</button>
+
+      `;
+
+    }
+
+    modal.style.display = 'flex';
+
+  };
+
+
+
+  window.closeDeleteModal = function() {
+
+    const modal = document.getElementById('whatsapp-delete-modal');
+
+    if (modal) modal.style.display = 'none';
+
+    pendingDeleteId = null;
+
+  };
+
+
+
+  window.confirmDeleteMessage = async function(type) {
+    const msgId = pendingDeleteId;
+    closeDeleteModal();
+    if (!msgId) return;
+    const user = getCurrentUser();
+    if (!user.email) return;
+
+    if (activeChatMode === 'trip' && activeTripGroup) {
+      const tripId = activeTripGroup.trip_id;
+      const cacheKey = `tv_cache_trip_msgs_${tripId}`;
+      let cached = [];
+      try { cached = JSON.parse(localStorage.getItem(cacheKey) || '[]'); } catch(e) {}
+      let deletedIds = [];
+      try { deletedIds = JSON.parse(localStorage.getItem('tv_deleted_trip_msg_ids') || '[]'); } catch(e) {}
+      deletedIds.push(String(msgId));
+      localStorage.setItem('tv_deleted_trip_msg_ids', JSON.stringify(deletedIds));
+      cached = cached.filter(m => String(m.id) !== String(msgId));
+      try { localStorage.setItem(cacheKey, JSON.stringify(cached)); } catch(e) {}
+      lastRenderedMessageSignature = '';
+      renderTripMessagesList(cached, user);
+
+      try {
+        await fetch(`${API_BASE}/delete-trip-message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message_id: msgId, user_email: user.email })
+        });
+      } catch(e) {}
+      return;
+    }
+
+    if (!activeBuddy) return;
+
+
+
+    // 1. Immediately remove from local cache for 0ms instant feedback
+
+    const cacheKey = `tv_cache_msgs_${user.email.toLowerCase()}_${activeBuddy.email.toLowerCase()}`;
+
+    let cached = [];
+
+    try {
+
+      cached = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+
+    } catch(e) {}
+
+
+
+    let deletedIds = [];
+
+    try {
+
+      deletedIds = JSON.parse(localStorage.getItem('tv_deleted_msg_ids') || '[]');
+
+    } catch(e) {}
+
+    deletedIds.push(String(msgId));
+
+    localStorage.setItem('tv_deleted_msg_ids', JSON.stringify(deletedIds));
+
+
+
+    cached = cached.filter(m => String(m.id) !== String(msgId));
+
+    try {
+
+      localStorage.setItem(cacheKey, JSON.stringify(cached));
+
+    } catch(e) {}
+
+
+
+    // Force re-render immediately
+
+    lastRenderedMessageSignature = '';
+
+    renderMessagesList(cached, user);
+
+
+
+    // 2. Call backend to remove from MongoDB database
+
+    try {
+
+      const res = await fetch(`${API_BASE}/delete-message`, {
+
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({
+
+          message_id: isNaN(Number(msgId)) ? msgId : Number(msgId),
+
+          delete_type: type,
+
+          user_email: user.email
+
+        })
+
+      });
+
+      const data = await res.json();
+
+      console.log('Message deleted from database:', data);
+
+    } catch(err) {
+
+      console.warn("Delete message server sync error:", err);
+
+    }
+
+
+
+    lastRenderedMessageSignature = '';
+
+    fetchAndRenderMessages();
+
+  };
+
+
+
+  
+
+  // EMOJI PICKER LOGIC
+
+  const EMOJI_CATEGORIES = {
+
+    travel: [
+
+      '✈️', '🛫', '🛬', '🏖️', '🏝️', '🏕️', '🏔️', '🗻', '🏜️', '🏨',
+
+      '🗺️', '🧳', '🎒', '🚗', '🚙', '🚂', '🛳️', '⛵', '🌅', '⛺',
+
+      '🗿', '🗽', '🗼', '⛩️', '🌍', '🌎', '🌏', '🧭', '🎫', '🎟️',
+
+      '📸', '🕶️', '🤿', '🏄', '🧗', '🚵', '🚣', '⛷️', '🏂', '☀️',
+
+      '🌴', '🌲', '🌊', '🛶', '⛽', '🛵', '🚲', '📍'
+
+    ],
+
+    smileys: [
+
+      '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+
+      '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+
+      '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
+
+      '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+
+      '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮'
+
+    ],
+
+    gestures: [
+
+      '👍', '👎', '👏', '🙌', '👐', '🤲', '🤝', '✌️', '🤞', '🤟',
+
+      '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👋', '🤚',
+
+      '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✍️', '🙏', '🫶', '❤️',
+
+      '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️',
+
+      '💕', '💞', '💓', '💗', '💖', '💘', '💝', '✨', '🔥', '💯'
+
+    ],
+
+    objects: [
+
+      '🍕', '🍔', '🍟', '🌭', '🥪', '🌮', '🌯', '🍜', '🍝', '🍣',
+
+      '🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '☕', '🍵', '🧃',
+
+      '🥤', '🍻', '🍺', '🍷', '🥂', '🍾', '🎉', '🎊', '🎁', '🎈',
+
+      '🏆', '🥇', '🥈', '🥉', '⚽', '🏀', '🏈', '🎾', '🎸', '🎵',
+
+      '💡', '⏰', '📱', '💻', '📷', '💰', '💵', '🔑', '⭐', '🌟'
+
+    ]
+
+  };
+
+
+
+  let currentEmojiCategory = 'travel';
+
+
+
+  window.toggleEmojiPicker = function(e) {
+
+    if (e) {
+
+      e.stopPropagation();
+
+      e.preventDefault();
+
+    }
+
+    const popover = document.getElementById('emoji-picker-popover');
+
+    const btn = document.getElementById('emoji-picker-btn');
+
+    if (!popover) return;
+
+
+
+    if (popover.style.display === 'flex') {
+
+      closeEmojiPicker();
+
+    } else {
+
+      popover.style.display = 'flex';
+
+      btn?.classList.add('active');
+
+      renderEmojiGrid(currentEmojiCategory);
+
+    }
+
+  };
+
+
+
+  window.closeEmojiPicker = function() {
+
+    const popover = document.getElementById('emoji-picker-popover');
+
+    const btn = document.getElementById('emoji-picker-btn');
+
+    if (popover) popover.style.display = 'none';
+
+    btn?.classList.remove('active');
+
+  };
+
+
+
+  window.switchEmojiCategory = function(cat, btnElem) {
+
+    currentEmojiCategory = cat;
+
+    document.querySelectorAll('.emoji-tab-btn').forEach(b => b.classList.remove('active'));
+
+    if (btnElem) btnElem.classList.add('active');
+
+    renderEmojiGrid(cat);
+
+  };
+
+
+
+  function renderEmojiGrid(cat) {
+
+    const grid = document.getElementById('emoji-grid-container');
+
+    if (!grid) return;
+
+    const list = EMOJI_CATEGORIES[cat] || EMOJI_CATEGORIES.travel;
+
+    grid.innerHTML = list.map(em => `
+
+      <button type="button" class="emoji-item" onclick="insertEmoji('${em}')">${em}</button>
+
+    `).join('');
+
+  }
+
+
+
+  window.insertEmoji = function(emoji) {
+
+    const input = document.getElementById('chat-text-input');
+
+    if (!input) return;
+
+
+
+    const start = input.selectionStart || input.value.length;
+
+    const end = input.selectionEnd || input.value.length;
+
+    const val = input.value;
+
+    input.value = val.substring(0, start) + emoji + val.substring(end);
+
+
+
+    const newPos = start + emoji.length;
+
+    input.setSelectionRange(newPos, newPos);
+
+    input.focus();
+
+  };
+
+
+
+  // Close emoji picker when clicking outside or pressing Escape
+
+  document.addEventListener('click', (e) => {
+
+    const popover = document.getElementById('emoji-picker-popover');
+
+    const btn = document.getElementById('emoji-picker-btn');
+
+    if (popover && popover.style.display === 'flex') {
+
+      if (!popover.contains(e.target) && !btn?.contains(e.target)) {
+
+        closeEmojiPicker();
+
+      }
+
+    }
+
+  });
+
+
+
+  document.addEventListener('keydown', (e) => {
+
+    if (e.key === 'Escape') {
+
+      closeEmojiPicker();
+
+      closeDeleteModal();
+
+    }
+
+  });
+
+
+
+  // Init
+
+  renderUserHeader();
+
+  syncCurrentUserProfile();
+
+  loadBuddiesFromBackendAndLocal();
+
+</script>
+
+
+
+<!-- WHATSAPP DELETE MESSAGE MODAL -->
+
+<div class="delete-msg-overlay" id="whatsapp-delete-modal" onclick="if(event.target===this)closeDeleteModal()">
+
+  <div class="delete-msg-box">
+
+    <div class="delete-msg-title">Delete message?</div>
+
+    <div class="delete-msg-sub" id="delete-modal-desc">Are you sure you want to delete this message?</div>
+
+    <div class="delete-msg-actions" id="delete-modal-actions">
+
+      <!-- Injected dynamically -->
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+</body>
+
+</html>
+

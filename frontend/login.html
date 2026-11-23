@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travelverse — Log in or sign up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  html, body {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+  }
+  .stage {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+  .runway {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+  }
+  .desk {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow-y: auto !important;
+    scrollbar-width: none !important;
+    padding: 20px 32px !important;
+  }
+  .desk::-webkit-scrollbar {
+    display: none !important;
+  }
+  .panel {
+    max-width: 390px !important;
+    margin: auto 0 !important;
+  }
+  .role-selector-wrap {
+    margin-bottom: 12px !important;
+  }
+  .tabs {
+    margin-bottom: 16px !important;
+  }
+  .field {
+    margin-bottom: 11px !important;
+  }
+  .submit {
+    margin-top: 12px !important;
+    padding: 12px !important;
+  }
+  #agent-register-modal.modal-overlay,
+  .modal-overlay {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(11,32,39,0.82) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 9999999 !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
+  }
+  #agent-register-modal.show,
+  .modal-overlay.show {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .role-chip{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid transparent;
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family:inherit;
+    user-select:none;
+  }
+  .role-chip:hover{
+    background:rgba(255,255,255,0.7);
+    color:var(--ink);
+  }
+  .role-chip.active{
+    background:#FFFFFF !important;
+    color:var(--ink) !important;
+    border-color:rgba(23,36,42,0.12) !important;
+    box-shadow:0 4px 14px rgba(23,36,42,0.08) !important;
+  }
+  .role-chip.active div div:first-child{
+    color:var(--ink);
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- LEFT PANEL -->
+  <div class="runway" id="runway">
+    <div class="sun"></div>
+
+    <div class="cloud-layer">
+      <div class="cloud-track">
+        <div class="cloud-set">
+          <svg class="cloud" width="70" height="30" viewBox="0 0 70 30"><ellipse cx="20" cy="18" rx="20" ry="10" fill="#FBF6EE"/><ellipse cx="40" cy="12" rx="16" ry="12" fill="#FBF6EE"/></svg>
+          <svg class="cloud" width="50" height="22" viewBox="0 0 50 22"><ellipse cx="15" cy="13" rx="15" ry="8" fill="#FBF6EE"/><ellipse cx="30" cy="9" rx="11" ry="9" fill="#FBF6EE"/></svg>
+          <svg class="cloud" width="60" height="26" viewBox="0 0 60 26"><ellipse cx="18" cy="15" rx="18" ry="9" fill="#FBF6EE"/><ellipse cx="36" cy="10" rx="13" ry="10" fill="#FBF6EE"/></svg>
+        </div>
+        <div class="cloud-set">
+          <svg class="cloud" width="70" height="30" viewBox="0 0 70 30"><ellipse cx="20" cy="18" rx="20" ry="10" fill="#FBF6EE"/><ellipse cx="40" cy="12" rx="16" ry="12" fill="#FBF6EE"/></svg>
+          <svg class="cloud" width="50" height="22" viewBox="0 0 50 22"><ellipse cx="15" cy="13" rx="15" ry="8" fill="#FBF6EE"/><ellipse cx="30" cy="9" rx="11" ry="9" fill="#FBF6EE"/></svg>
+          <svg class="cloud" width="60" height="26" viewBox="0 0 60 26"><ellipse cx="18" cy="15" rx="18" ry="9" fill="#FBF6EE"/><ellipse cx="36" cy="10" rx="13" ry="10" fill="#FBF6EE"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="hills-layer">
+      <div class="hills-track">
+        <div class="hills-set">
+          <svg viewBox="0 0 300 150" preserveAspectRatio="none"><path d="M0,150 L0,85 Q40,50 75,72 T150,58 T225,76 T300,64 L300,150 Z" fill="#3B3A63" opacity="0.85"/></svg>
+          <svg viewBox="0 0 300 150" preserveAspectRatio="none"><path d="M0,150 L0,95 Q45,65 90,82 T180,68 T260,86 T300,78 L300,150 Z" fill="#54406B" opacity="0.65"/></svg>
+        </div>
+        <div class="hills-set">
+          <svg viewBox="0 0 300 150" preserveAspectRatio="none"><path d="M0,150 L0,85 Q40,50 75,72 T150,58 T225,76 T300,64 L300,150 Z" fill="#3B3A63" opacity="0.85"/></svg>
+          <svg viewBox="0 0 300 150" preserveAspectRatio="none"><path d="M0,150 L0,95 Q45,65 90,82 T180,68 T260,86 T300,78 L300,150 Z" fill="#54406B" opacity="0.65"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="poles-layer">
+      <div class="poles-track">
+        <div class="poles-set">
+          <svg width="14" height="80" viewBox="0 0 14 80"><rect x="5" y="18" width="4" height="62" fill="#1F1B2E"/><path d="M7 0 C-3 14, -3 26, 7 30 C17 26, 17 14, 7 0 Z" fill="#2E5C42"/><path d="M7 8 C-1 18, -1 28, 7 32 C15 28, 15 18, 7 8 Z" fill="#2E5C42"/></svg>
+          <svg width="10" height="56" viewBox="0 0 10 56"><rect x="4" y="14" width="2.5" height="42" fill="#1F1B2E"/><path d="M5 0 C-2 10, -2 20, 5 22 C12 20, 12 10, 5 0 Z" fill="#2E5C42"/></svg>
+          <svg width="14" height="80" viewBox="0 0 14 80"><rect x="5" y="18" width="4" height="62" fill="#1F1B2E"/><path d="M7 0 C-3 14, -3 26, 7 30 C17 26, 17 14, 7 0 Z" fill="#2E5C42"/><path d="M7 8 C-1 18, -1 28, 7 32 C15 28, 15 18, 7 8 Z" fill="#2E5C42"/></svg>
+          <svg width="10" height="56" viewBox="0 0 10 56"><rect x="4" y="14" width="2.5" height="42" fill="#1F1B2E"/><path d="M5 0 C-2 10, -2 20, 5 22 C12 20, 12 10, 5 0 Z" fill="#2E5C42"/></svg>
+        </div>
+        <div class="poles-set">
+          <svg width="14" height="80" viewBox="0 0 14 80"><rect x="5" y="18" width="4" height="62" fill="#1F1B2E"/><path d="M7 0 C-3 14, -3 26, 7 30 C17 26, 17 14, 7 0 Z" fill="#2E5C42"/><path d="M7 8 C-1 18, -1 28, 7 32 C15 28, 15 18, 7 8 Z" fill="#2E5C42"/></svg>
+          <svg width="10" height="56" viewBox="0 0 10 56"><rect x="4" y="14" width="2.5" height="42" fill="#1F1B2E"/><path d="M5 0 C-2 10, -2 20, 5 22 C12 20, 12 10, 5 0 Z" fill="#2E5C42"/></svg>
+          <svg width="14" height="80" viewBox="0 0 14 80"><rect x="5" y="18" width="4" height="62" fill="#1F1B2E"/><path d="M7 0 C-3 14, -3 26, 7 30 C17 26, 17 14, 7 0 Z" fill="#2E5C42"/><path d="M7 8 C-1 18, -1 28, 7 32 C15 28, 15 18, 7 8 Z" fill="#2E5C42"/></svg>
+          <svg width="10" height="56" viewBox="0 0 10 56"><rect x="4" y="14" width="2.5" height="42" fill="#1F1B2E"/><path d="M5 0 C-2 10, -2 20, 5 22 C12 20, 12 10, 5 0 Z" fill="#2E5C42"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="brandmark">
+      <div class="eyebrow">Riding into your next trip</div>
+      <h1>TravelVerse</h1>
+      <p>Pack your bags. Log in to roll out.</p>
+    </div>
+
+    <div class="road">
+      <div class="lane-layer">
+        <div class="lane-track">
+          <div class="lane-set">
+            <div class="dash"></div><div class="dash"></div><div class="dash"></div><div class="dash"></div><div class="dash"></div><div class="dash"></div>
+          </div>
+          <div class="lane-set">
+            <div class="dash"></div><div class="dash"></div><div class="dash"></div><div class="dash"></div><div class="dash"></div><div class="dash"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="car-scene">
+      <div class="car-shadow"></div>
+
+      <div class="car-mascots">
+        <div class="mascot" data-name="cactus">
+         <div class="mascot-lean">
+          <svg viewBox="0 0 80 112">
+            <ellipse cx="32" cy="106" rx="9" ry="5" fill="#3f6b4d"/>
+            <ellipse cx="48" cy="106" rx="9" ry="5" fill="#3f6b4d"/>
+            <rect x="22" y="62" width="36" height="42" rx="14" fill="#4a7a58"/>
+            <rect x="30" y="26" width="20" height="42" rx="10" fill="#5C8D6B"/>
+            <rect x="14" y="36" width="14" height="10" rx="6" fill="#5C8D6B"/>
+            <rect x="52" y="30" width="14" height="10" rx="6" fill="#5C8D6B"/>
+            <ellipse class="eye-white" cx="32" cy="42" rx="6.5" ry="7.5"/>
+            <ellipse class="eye-white" cx="48" cy="42" rx="6.5" ry="7.5"/>
+            <circle class="pupil" data-eye="1" cx="32" cy="42" r="3"/>
+            <circle class="pupil" data-eye="2" cx="48" cy="42" r="3"/>
+            <rect class="lid" data-lid="1" x="25.5" y="34.5" width="13" height="15" rx="6.5" fill="#5C8D6B"/>
+            <rect class="lid" data-lid="2" x="41.5" y="34.5" width="13" height="15" rx="6.5" fill="#5C8D6B"/>
+            <ellipse class="blush" cx="25" cy="52" rx="4" ry="2.2" fill="#D6555A"/>
+            <ellipse class="blush" cx="55" cy="52" rx="4" ry="2.2" fill="#D6555A"/>
+            <g class="arm cover" data-arm="1"><path d="M16 44 Q20 62 34 60" stroke="#3f6b4d" stroke-width="7" stroke-linecap="round" fill="none"/><circle class="hand" cx="34" cy="60" r="5.5" fill="#3f6b4d"/></g>
+            <g class="arm cover" data-arm="2"><path d="M64 38 Q60 60 44 60" stroke="#3f6b4d" stroke-width="7" stroke-linecap="round" fill="none"/><circle class="hand" cx="44" cy="60" r="5.5" fill="#3f6b4d"/></g>
+          </svg>
+         </div>
+        </div>
+
+        <div class="mascot" data-name="suitcase">
+         <div class="mascot-lean">
+          <svg viewBox="0 0 80 112">
+            <ellipse cx="30" cy="106" rx="9" ry="5" fill="#8a6a14"/>
+            <ellipse cx="50" cy="106" rx="9" ry="5" fill="#8a6a14"/>
+            <rect x="18" y="64" width="44" height="42" rx="14" fill="#a8841e"/>
+            <rect x="14" y="30" width="52" height="38" rx="8" fill="#C9A227"/>
+            <rect x="30" y="20" width="20" height="14" rx="4" fill="none" stroke="#C9A227" stroke-width="5"/>
+            <ellipse class="eye-white" cx="32" cy="48" rx="7" ry="8"/>
+            <ellipse class="eye-white" cx="52" cy="48" rx="7" ry="8"/>
+            <circle class="pupil" data-eye="1" cx="32" cy="48" r="3.2"/>
+            <circle class="pupil" data-eye="2" cx="52" cy="48" r="3.2"/>
+            <rect class="lid" data-lid="1" x="25" y="40" width="14" height="16" rx="7"/>
+            <rect class="lid" data-lid="2" x="45" y="40" width="14" height="16" rx="7"/>
+            <ellipse class="blush" cx="26" cy="58" rx="4" ry="2.4" fill="#D6555A"/>
+            <ellipse class="blush" cx="58" cy="58" rx="4" ry="2.4" fill="#D6555A"/>
+            <g class="arm cover" data-arm="1"><path d="M16 52 Q22 70 36 66" stroke="#8a6a14" stroke-width="7" stroke-linecap="round" fill="none"/><circle class="hand" cx="36" cy="66" r="5.5" fill="#8a6a14"/></g>
+            <g class="arm cover" data-arm="2"><path d="M64 52 Q58 70 44 66" stroke="#8a6a14" stroke-width="7" stroke-linecap="round" fill="none"/><circle class="hand" cx="44" cy="66" r="5.5" fill="#8a6a14"/></g>
+          </svg>
+         </div>
+        </div>
+
+        <div class="mascot" data-name="globe">
+         <div class="mascot-lean">
+          <svg viewBox="0 0 80 112">
+            <ellipse cx="30" cy="106" rx="9" ry="5" fill="#a8641c"/>
+            <ellipse cx="50" cy="106" rx="9" ry="5" fill="#a8641c"/>
+            <rect x="18" y="60" width="44" height="42" rx="14" fill="#c1743a"/>
+            <circle cx="40" cy="42" r="26" fill="#E8874A"/>
+            <path d="M18 34 Q40 44 62 34 M18 50 Q40 40 62 50 M40 16 Q30 42 40 68 M40 16 Q50 42 40 68" stroke="#FBF6EE" stroke-width="1.6" fill="none" opacity=".55"/>
+            <ellipse class="eye-white" cx="30" cy="40" rx="7" ry="8"/>
+            <ellipse class="eye-white" cx="50" cy="40" rx="7" ry="8"/>
+            <circle class="pupil" data-eye="1" cx="30" cy="40" r="3.2"/>
+            <circle class="pupil" data-eye="2" cx="50" cy="40" r="3.2"/>
+            <rect class="lid" data-lid="1" x="23" y="32" width="14" height="16" rx="7"/>
+            <rect class="lid" data-lid="2" x="43" y="32" width="14" height="16" rx="7"/>
+            <ellipse class="blush" cx="24" cy="50" rx="4" ry="2.4" fill="#D6555A"/>
+            <ellipse class="blush" cx="56" cy="50" rx="4" ry="2.4" fill="#D6555A"/>
+            <g class="arm cover" data-arm="1"><path d="M14 46 Q20 66 34 62" stroke="#C9A227" stroke-width="7" stroke-linecap="round" fill="none"/><circle class="hand" cx="34" cy="62" r="5.5" fill="#C9A227"/></g>
+            <g class="arm cover" data-arm="2"><path d="M66 46 Q60 66 46 62" stroke="#C9A227" stroke-width="7" stroke-linecap="round" fill="none"/><circle class="hand" cx="46" cy="62" r="5.5" fill="#C9A227"/></g>
+          </svg>
+         </div>
+        </div>
+
+        <div class="mascot" data-name="plane">
+         <div class="mascot-lean">
+          <svg viewBox="0 0 80 112">
+            <ellipse cx="32" cy="106" rx="9" ry="5" fill="#b7a684"/>
+            <ellipse cx="48" cy="106" rx="9" ry="5" fill="#b7a684"/>
+            <rect x="22" y="64" width="36" height="42" rx="14" fill="#E5DFCF"/>
+            <path d="M40 12 L52 46 L40 40 L28 46 Z" fill="#FBF6EE"/>
+            <ellipse cx="40" cy="46" rx="18" ry="16" fill="#FBF6EE"/>
+            <ellipse cx="32" cy="46" rx="7" ry="8" fill="#F4EFE4"/>
+            <ellipse cx="48" cy="46" rx="7" ry="8" fill="#F4EFE4"/>
+            <circle class="pupil" data-eye="1" cx="32" cy="46" r="3.2"/>
+            <circle class="pupil" data-eye="2" cx="48" cy="46" r="3.2"/>
+            <rect class="lid" data-lid="1" x="25" y="38" width="14" height="16" rx="7" fill="#F4EFE4"/>
+            <rect class="lid" data-lid="2" x="41" y="38" width="14" height="16" rx="7" fill="#F4EFE4"/>
+            <ellipse class="blush" cx="26" cy="56" rx="4" ry="2.2" fill="#D6555A"/>
+            <ellipse class="blush" cx="54" cy="56" rx="4" ry="2.2" fill="#D6555A"/>
+            <g class="arm cover" data-arm="1"><path d="M18 50 Q22 68 36 64" stroke="#cbb999" stroke-width="7" stroke-linecap="round" fill="none"/><circle class="hand" cx="36" cy="64" r="5.5" fill="#cbb999"/></g>
+            <g class="arm cover" data-arm="2"><path d="M62 50 Q58 68 44 64" stroke="#cbb999" stroke-width="7" stroke-linecap="round" fill="none"/><circle class="hand" cx="44" cy="64" r="5.5" fill="#cbb999"/></g>
+          </svg>
+         </div>
+        </div>
+      </div>
+
+      <svg class="car-body-front" viewBox="0 0 460 200">
+        <rect x="40" y="66" width="380" height="88" rx="26" fill="#D6555A"/>
+        <path d="M296 66 L360 66 L336 20 L296 20 Z" fill="rgba(251,246,238,0.55)"/>
+        <rect x="286" y="14" width="14" height="56" rx="5" fill="#17242A"/>
+        <rect x="40" y="128" width="380" height="42" rx="16" fill="#17242A"/>
+        <rect x="392" y="96" width="26" height="14" rx="5" fill="#FBF6EE"/>
+        <circle cx="112" cy="168" r="33" fill="#17242A"/>
+        <circle cx="348" cy="168" r="33" fill="#17242A"/>
+        <g class="wheel" style="transform-origin:112px 168px;">
+          <circle cx="112" cy="168" r="16" fill="#FBF6EE"/>
+          <rect x="108" y="140" width="8" height="56" fill="#C9A227"/>
+          <rect x="84" y="164" width="56" height="8" fill="#C9A227"/>
+        </g>
+        <g class="wheel" style="transform-origin:348px 168px;">
+          <circle cx="348" cy="168" r="16" fill="#FBF6EE"/>
+          <rect x="344" y="140" width="8" height="56" fill="#C9A227"/>
+          <rect x="320" y="164" width="56" height="8" fill="#C9A227"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="desk">
+    <div class="panel">
+
+      <!-- ROLE SELECTOR -->
+      <div class="role-selector-wrap" style="margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--ink-soft);">Select Account Role</span>
+          <span id="role-badge" style="font-size: 11px; font-weight: 700; background: rgba(232,135,74,0.12); color: var(--accent-sunset); padding: 3px 10px; border-radius: 99px;">Traveller Portal</span>
+        </div>
+        <div class="role-switch" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: rgba(23,36,42,0.06); padding: 5px; border-radius: 14px; border: 1.5px solid var(--line);">
+          <button type="button" class="role-chip active" id="role-chip-traveller" onclick="setAccountRole('traveller')">
+            <span style="font-size: 18px;">🎒</span>
+            <div style="text-align: left;">
+              <div style="font-weight: 700; font-size: 13.5px; line-height: 1.2;">Traveller</div>
+              <div style="font-size: 10.5px; color: var(--ink-soft); font-weight: 500;">Join & explore trips</div>
+            </div>
+          </button>
+          <button type="button" class="role-chip" id="role-chip-agent" onclick="setAccountRole('agent')">
+            <span style="font-size: 18px;">🧭</span>
+            <div style="text-align: left;">
+              <div style="font-weight: 700; font-size: 13.5px; line-height: 1.2;">Travel Agent</div>
+              <div style="font-size: 10.5px; color: var(--ink-soft); font-weight: 500;">Host trips & guide clients</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="login">Log in</button>
+        <button class="tab" data-tab="register">Sign up</button>
+        <div class="tab-glider"></div>
+      </div>
+
+      <div id="login-copy">
+        <h2 class="headline" id="login-headline">Welcome back</h2>
+        <p class="sub" id="login-sub">Log in to pick up your itinerary where you left off.</p>
+      </div>
+      <div id="register-copy" style="display:none;">
+        <h2 class="headline" id="register-headline">Create your account</h2>
+        <p class="sub" id="register-sub">Join Travelverse and start planning your next trip.</p>
+        <div class="signup-progress">
+            <span id="step-indicator">Step 1 of 3</span>
+        </div>
+      </div>
+
+      <form id="login-form" class="active">
+        <div class="field">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label for="login-email" style="margin-bottom:0;">Email or Username</label>
+            <span id="role-detect-indicator" style="font-size:11px; font-weight:700; display:none; padding:2px 8px; border-radius:99px; transition:all 0.2s ease;"></span>
+          </div>
+          <input type="text" id="login-email" name="email" class="watch-field" placeholder="you@example.com or username" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <div class="field-inner pw-row">
+            <input type="password" id="login-password" name="password" class="shy-field" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="pw-toggle" data-target="login-password">Show</button>
+          </div>
+        </div>
+        <div class="row-between">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" name="remember" style="width:auto;"> Remember me
+          </label>
+          <a href="#" id="forgot-password-link">Forgot password?</a>
+        </div>
+        <button class="submit" type="submit" id="login-submit-btn">Continue to Travelverse →</button>
+      </form>
+
+      <form id="register-form">
+        <!-- STEP 1: VERIFY EMAIL -->
+        <div id="signup-step1">
+          <div class="field">
+            <label for="reg-email" id="reg-email-label">Email Address</label>
+            <input type="email" id="reg-email" name="email" class="watch-field" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+
+          <button type="button" id="signup-send-otp-btn" class="submit">Send Verification Code →</button>
+
+          <div class="divider" style="margin: 18px 0 14px 0;">or continue with</div>
+
+          <div role="button" tabindex="0" id="signup-google-quick-btn" class="google-auth-btn" onclick="openGoogleModal(event)" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; border:1.5px solid rgba(23,36,42,0.16); border-radius:12px; padding:11px; font-weight:600; color:#17242A; cursor:pointer; font-size:0.92rem; transition:all 0.2s; user-select:none; z-index:10; position:relative;">
+            <svg style="pointer-events:none;" width="18" height="18" viewBox="0 0 24 24"><path style="pointer-events:none;" fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path style="pointer-events:none;" fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path style="pointer-events:none;" fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z"/><path style="pointer-events:none;" fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            <span style="pointer-events:none;">Continue with Google</span>
+          </div>
+
+          <!-- OTP Input Section (shown after sending code) -->
+          <div id="signup-otp-box" style="display:none; margin-top:15px;">
+            <div class="field">
+              <label for="signup-otp-input">6-Digit Verification Code</label>
+              <input type="text" id="signup-otp-input" class="watch-field" placeholder="• • • • • •" maxlength="6" style="letter-spacing:6px; font-size:1.3rem; text-align:center;">
+            </div>
+            <p style="font-size:0.85rem; color:#55625F; text-align:center; margin:-5px 0 15px 0;">
+              Code sent to <strong id="signup-target-email"></strong>. 
+              <a href="#" id="signup-resend-otp-btn" style="color:#E8874A; text-decoration:underline;">Resend Code</a>
+            </p>
+            <button type="button" id="signup-verify-otp-btn" class="submit">Verify Email →</button>
+          </div>
+        </div> <!-- signup-step1 CLOSE -->
+
+        <!-- STEP 2: SET PASSWORD -->
+        <div id="signup-step2" style="display:none;">
+          <div class="field">
+            <label for="reg-password">Create Password</label>
+            <div class="field-inner pw-row">
+              <input type="password" id="reg-password" name="password" class="shy-field" placeholder="At least 6 characters" autocomplete="new-password" required>
+              <button type="button" class="pw-toggle" data-target="reg-password">Show</button>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:15px;">
+            <button type="button" id="signup-step2-back-btn" style="flex:1; background:rgba(23,36,42,0.08); border:none; color:#17242A; border-radius:10px; font-weight:600; cursor:pointer; padding:12px;">← Back</button>
+            <button type="button" id="signup-step2-next-btn" class="submit" style="flex:2; margin-top:0;">Next: Profile Details →</button>
+          </div>
+        </div> <!-- signup-step2 CLOSE -->
+
+        <!-- STEP 3: PROFILE DETAILS & FINISH -->
+        <div id="signup-step3" style="display:none;">
+          
+          <!-- TRAVELLER SPECIFIC DETAILS -->
+          <div id="signup-traveller-fields">
+            <div class="field">
+              <label for="first-name">Full name</label>
+              <input type="text" id="first-name" name="first_name" class="watch-field" placeholder="Alex" autocomplete="given-name">
+            </div>
+            <div class="field">
+              <label for="last-name">Last name</label>
+              <input type="text" id="last-name" name="last_name" class="watch-field" placeholder="Rivera" autocomplete="family-name">
+            </div>
+            <div class="field">
+              <label for="username">Username handle</label>
+              <input type="text" id="username" name="username" class="watch-field" placeholder="AlexaRivera" autocomplete="username">
+            </div>
+          </div>
+
+          <!-- AGENT PROMPT CARD (POPUP MODAL TO AVOID SCROLL) -->
+          <div id="signup-agent-card" style="display:none; text-align:center; padding:18px 16px; background:rgba(201,162,39,0.08); border:1.5px dashed var(--gold); border-radius:14px; margin-bottom:14px;">
+            <div style="font-size:32px; margin-bottom:6px;">🧭</div>
+            <div style="font-weight:700; font-size:15px; color:var(--ink);">Agent Registration Form</div>
+            <p style="font-size:12.5px; color:var(--ink-soft); margin:6px 0 14px 0; line-height:1.4;">
+              To ensure a clean, scroll-free interface, please complete your guide and agency details in the popup modal.
+            </p>
+            <button type="button" class="submit" id="open-agent-popup-btn" onclick="window.openAgentRegisterModal && window.openAgentRegisterModal()" style="margin:0; width:100%; background:linear-gradient(135deg, var(--gold), #D48806); color:#0B2027; font-weight:700; cursor:pointer;">
+              📋 Open Agent Registration Form →
+            </button>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:15px;">
+            <button type="button" id="signup-step3-back-btn" style="flex:1; background:rgba(23,36,42,0.08); border:none; color:#17242A; border-radius:10px; font-weight:600; cursor:pointer; padding:12px;">← Back</button>
+            <button type="submit" id="signup-complete-btn" class="submit" style="flex:2; margin-top:0;">Complete Registration →</button>
+          </div>
+        </div> <!-- signup-step3 CLOSE -->
+      </form>
+
+      <!-- LOGIN FOOTER -->
+      <div id="login-footer" >
+          <p class="switch-line" style="margin-top:20px;">
+              New to Travelverse?
+              <button type="button" data-goto="register">
+                  Sign up
+              </button>
+          </p>
+      </div>
+
+<!-- SIGNUP FOOTER -->
+<div id="signup-footer" style="display:none;">
+    <p class="switch-line" style="margin-top:20px;">
+        Already have an account?
+        <button type="button" data-goto="login">
+            Log in
+        </button>
+    </p>
+</div>
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+  // ---------- Global Modal Handlers ----------
+  window.openAgentRegisterModal = function() {
+    const modal = document.getElementById('agent-register-modal');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('opacity', '1', 'important');
+      modal.style.setProperty('visibility', 'visible', 'important');
+      modal.style.setProperty('pointer-events', 'auto', 'important');
+      modal.style.setProperty('z-index', '9999999', 'important');
+    }
+  };
+
+  window.closeAgentRegisterModal = function() {
+    const modal = document.getElementById('agent-register-modal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('opacity', '0', 'important');
+      modal.style.setProperty('visibility', 'hidden', 'important');
+      modal.style.setProperty('pointer-events', 'none', 'important');
+    }
+  };
+
+  window.submitAgentFromModal = function() {
+    const completeBtn = document.getElementById('signup-complete-btn');
+    if (completeBtn) {
+      completeBtn.click();
+    }
+  };
+
+  // ---------- Role Configuration ----------
+  window.CURRENT_ROLE = 'traveller';
+
+  function setAccountRole(role) {
+    window.CURRENT_ROLE = role;
+    const travBtn = document.getElementById('role-chip-traveller');
+    const agentBtn = document.getElementById('role-chip-agent');
+    const badge = document.getElementById('role-badge');
+    const loginH2 = document.getElementById('login-headline');
+    const loginSub = document.getElementById('login-sub');
+    const regH2 = document.getElementById('register-headline');
+    const regSub = document.getElementById('register-sub');
+    const travFields = document.getElementById('signup-traveller-fields');
+    const agentFields = document.getElementById('signup-agent-fields');
+    const emailLabel = document.getElementById('reg-email-label');
+    const roleIndicator = document.getElementById('role-detect-indicator');
+    const emailVal = (document.getElementById('login-email') ? document.getElementById('login-email').value : '').trim();
+
+    if (role === 'agent') {
+      if (travBtn) travBtn.classList.remove('active');
+      if (agentBtn) agentBtn.classList.add('active');
+      if (badge) {
+        badge.textContent = 'Agent Portal';
+        badge.style.background = 'rgba(201,162,39,0.18)';
+        badge.style.color = '#B38B1B';
+      }
+      if (loginH2) loginH2.textContent = 'Welcome back, Agent';
+      if (loginSub) loginSub.textContent = 'Log in to host trips, manage client bookings and inquiries.';
+      if (regH2) regH2.textContent = 'Register Agency / Guide';
+      if (regSub) regSub.textContent = 'Create your verified agency profile and publish group trips.';
+      if (travFields) travFields.style.display = 'none';
+      const agentCard = document.getElementById('signup-agent-card');
+      if (agentCard) agentCard.style.display = 'block';
+      if (agentFields) agentFields.style.display = 'none';
+      if (emailLabel) emailLabel.textContent = 'Official Agent Email Address';
+      if (roleIndicator) {
+        if (emailVal) {
+          roleIndicator.style.display = 'inline-block';
+          roleIndicator.style.background = 'rgba(201,162,39,0.18)';
+          roleIndicator.style.color = '#B38B1B';
+          roleIndicator.textContent = '🧭 Travel Agent Account';
+        } else {
+          roleIndicator.style.display = 'none';
+        }
+      }
+    } else {
+      if (travBtn) travBtn.classList.add('active');
+      if (agentBtn) agentBtn.classList.remove('active');
+      if (badge) {
+        badge.textContent = 'Traveller Portal';
+        badge.style.background = 'rgba(232,135,74,0.12)';
+        badge.style.color = 'var(--accent-sunset)';
+      }
+      if (loginH2) loginH2.textContent = 'Welcome back';
+      if (loginSub) loginSub.textContent = 'Log in to pick up your itinerary where you left off.';
+      if (regH2) regH2.textContent = 'Create your account';
+      if (regSub) regSub.textContent = 'Join Travelverse and start planning your next trip.';
+      if (travFields) travFields.style.display = 'block';
+      const agentCard = document.getElementById('signup-agent-card');
+      if (agentCard) agentCard.style.display = 'none';
+      if (agentFields) agentFields.style.display = 'none';
+      if (emailLabel) emailLabel.textContent = 'Email Address';
+      if (roleIndicator) {
+        if (emailVal) {
+          roleIndicator.style.display = 'inline-block';
+          roleIndicator.style.background = 'rgba(232,135,74,0.12)';
+          roleIndicator.style.color = 'var(--accent-sunset)';
+          roleIndicator.textContent = '🎒 Traveller Account';
+        } else {
+          roleIndicator.style.display = 'none';
+        }
+      }
+    }
+  }
+  window.setAccountRole = setAccountRole;
+
+  // ---------- Tabs ----------
+  const tabs = document.querySelectorAll('.tab');
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const loginCopy = document.getElementById('login-copy');
+  const registerCopy = document.getElementById('register-copy');
+  const switchLogin = document.getElementById('switch-login');
+  const switchRegister = document.getElementById('switch-register');
+  const loginFooter = document.getElementById("login-footer");
+  const signupFooter = document.getElementById("signup-footer");
+  const signupStep1 = document.getElementById("signup-step1");
+  const signupStep2 = document.getElementById("signup-step2");
+  const stepIndicator = document.getElementById("step-indicator");
+  
+  function showTab(name){
+
+    tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+
+    loginForm.classList.toggle("active", name === "login");
+    registerForm.classList.toggle("active", name === "register");
+
+    loginCopy.style.display = (name === "login") ? "block" : "none";
+    registerCopy.style.display = (name === "register") ? "block" : "none";
+    setAccountRole(window.CURRENT_ROLE);
+
+
+    if(name === "login"){
+
+        loginFooter.style.display = "block";
+        signupFooter.style.display = "none";
+
+    }
+    else{
+
+        loginFooter.style.display = "none";
+        signupFooter.style.display = "block";
+
+        if(signupStep1) signupStep1.style.display = "block";
+        if(signupStep2) signupStep2.style.display = "none";
+        const step3 = document.getElementById("signup-step3");
+        if(step3) step3.style.display = "none";
+
+        if(stepIndicator) stepIndicator.textContent = "Step 1 of 3";
+
+        if(registerCopy) {
+            const h2 = registerCopy.querySelector(".headline");
+            const sub = registerCopy.querySelector(".sub");
+            if(h2) h2.textContent = "Create your account";
+            if(sub) sub.textContent = "Join TravelVerse and start planning your next trip.";
+        }
+
+    }
+
+}
+  tabs.forEach(t=> t.addEventListener('click', ()=> showTab(t.dataset.tab)));
+
+  const params = new URLSearchParams(window.location.search);
+const initialTab = params.get('tab') === 'register' ? 'register' : 'login';
+showTab(initialTab);
+
+  document.querySelectorAll('[data-goto]').forEach(b=>{
+    b.addEventListener('click', ()=> showTab(b.dataset.goto));
+  });
+
+  // ---------- Password show/hide ----------
+  document.querySelectorAll('.pw-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const input = document.getElementById(btn.dataset.target);
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.textContent = showing ? 'Show' : 'Hide';
+    });
+  });
+
+  // ---------- Mascot eyes ----------
+  const mascots = Array.from(document.querySelectorAll('.mascot'));
+  const eyeData = mascots.map(m=>{
+    return {
+      el: m,
+      lean: m.querySelector('.mascot-lean'),
+      pupils: Array.from(m.querySelectorAll('.pupil')),
+      lids: Array.from(m.querySelectorAll('.lid'))
+    };
+  });
+
+  let mode = 'idle'; // idle | watch | shy
+  let mouse = { x: window.innerWidth*0.25, y: window.innerHeight*0.5 };
+  let watchTarget = { x: 0, y: 0 };
+
+  function eyeCenter(pupilEl){
+    const r = pupilEl.getBoundingClientRect();
+    return { x: r.left + r.width/2, y: r.top + r.height/2 };
+  }
+
+  function updatePupils(){
+    const target = mode === 'watch' ? watchTarget : mouse;
+    eyeData.forEach(m=>{
+      m.pupils.forEach(p=>{
+        if(mode === 'shy'){
+          p.style.opacity = '0';
+          return;
+        }
+        p.style.opacity = '1';
+        const c = eyeCenter(p);
+        const dx = target.x - c.x;
+        const dy = target.y - c.y;
+        const dist = Math.min(2.2, Math.hypot(dx,dy)/40);
+        const angle = Math.atan2(dy,dx);
+        const ox = Math.cos(angle)*dist;
+        const oy = Math.sin(angle)*dist;
+        p.style.transform = `translate(${ox}px, ${oy}px)`;
+      });
+      m.lids.forEach(l=>{
+        l.style.transform = mode === 'shy' ? 'scaleY(0.15)' : 'scaleY(0)';
+      });
+      m.el.classList.toggle('shy', mode==='shy');
+
+      // Whole-body lean: the seated crew turns toward whatever they're watching,
+      // not just their eyes.
+      if(m.lean && !m.el.classList.contains('shake')){
+        if(mode === 'shy'){
+          m.lean.style.transform = 'rotate(0deg) translate(0px, 0px)';
+        } else {
+          const r = m.el.getBoundingClientRect();
+          const bx = r.left + r.width/2;
+          const by = r.top + r.height*0.32;
+          const dx = target.x - bx;
+          const dy = target.y - by;
+          const rot = Math.max(-8, Math.min(8, dx/34));
+          const tx = Math.max(-7, Math.min(7, dx/55));
+          const ty = Math.max(-3, Math.min(3, dy/140));
+          m.lean.style.transform = `rotate(${rot}deg) translate(${tx}px, ${ty}px)`;
+        }
+      }
+    });
+    requestAnimationFrame(updatePupils);
+  }
+  requestAnimationFrame(updatePupils);
+
+  window.addEventListener('mousemove', (e)=>{
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  // Watch mode: any non-password field being typed in
+  document.querySelectorAll('.watch-field').forEach(input=>{
+    input.addEventListener('focus', ()=>{
+      mode = 'watch';
+      const r = input.getBoundingClientRect();
+      watchTarget = { x: r.left + r.width/2, y: r.top };
+    });
+    input.addEventListener('input', ()=>{
+      const r = input.getBoundingClientRect();
+      watchTarget = { x: r.left + r.width/2, y: r.top };
+    });
+    input.addEventListener('blur', ()=>{ if(mode==='watch') mode='idle'; });
+  });
+
+  // Shy mode: password fields
+  document.querySelectorAll('.shy-field').forEach(input=>{
+    input.addEventListener('focus', ()=> mode = 'shy');
+    input.addEventListener('blur', ()=>{ if(mode==='shy') mode='idle'; });
+  });
+
+  // ---------- "No, that's wrong" head shake ----------
+  function triggerShake(){
+    mascots.forEach(m=> m.classList.add('shake'));
+    setTimeout(()=> mascots.forEach(m=> m.classList.remove('shake')), 600);
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  document.querySelectorAll('input[type="email"]').forEach(input=>{
+    input.addEventListener('blur', ()=>{
+      if(input.value.length > 0 && !emailPattern.test(input.value)){
+        triggerShake();
+      }
+    });
+  });
+
+  const regPassword = document.getElementById('reg-password');
+  if(regPassword){
+    regPassword.addEventListener('blur', ()=>{
+      if(regPassword.value.length > 0 && regPassword.value.length < 6){
+        triggerShake();
+      }
+    });
+  }
+  // Step navigation is handled cleanly in auth.js
+</script>
+
+<div id="travel-toast" class="travel-toast">
+    <div class="toast-icon" id="toast-icon">✓</div>
+
+    <div class="toast-content">
+        <h4 id="toast-title">Success</h4>
+        <p id="toast-message">Operation successful.</p>
+    </div>
+
+    <button type="button" id="toast-close">×</button>
+</div>
+<!-- ACCOUNT CREATED SUCCESS MODAL -->
+
+<div id="account-success-modal" class="success-modal-overlay">
+
+    <div class="success-modal">
+
+        <div class="success-modal-icon">✓</div>
+
+        <h2>Adventure unlocked!</h2>
+
+        <p>
+            Your TravelVerse account is ready.
+            Pack your curiosity — your next journey starts here.
+        </p>
+
+        <button type="button" id="success-modal-btn">
+            Start exploring →
+        </button>
+
+    </div>
+</div>
+
+
+
+<!-- RESET PASSWORD MODAL (Strict 3-Step Flow: Email -> Verify OTP -> Set Password) -->
+<div id="reset-password-modal" class="success-modal-overlay">
+  <div class="success-modal" style="max-width:440px; text-align:left; position:relative;">
+    <button type="button" id="reset-password-close" style="position:absolute; top:14px; right:16px; background:none; border:none; font-size:22px; cursor:pointer; color:#55625F;">×</button>
+    <div style="font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:#C9A227; margin-bottom:6px;">Account Recovery</div>
+    
+    <!-- STEP 1: ENTER EMAIL -->
+    <div id="reset-step-1">
+      <h2 style="margin-top:0; margin-bottom:8px;">Reset Password</h2>
+      <p style="font-size:13.5px; color:#55625F; line-height:1.5; margin-bottom:20px;">
+        Enter your registered email address and we'll send you a 6-digit verification code.
+      </p>
+      <div class="field" style="margin-bottom:20px;">
+        <label for="reset-email" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#17242A;">Email Address</label>
+        <input type="email" id="reset-email" placeholder="you@example.com" style="width:100%; padding:12px 14px; border:1.5px solid rgba(23,36,42,0.16); border-radius:12px; font-size:14px; font-family:inherit; outline:none; box-sizing:border-box;">
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="reset-password-cancel" style="flex:1; background:none; border:1.5px solid rgba(23,36,42,0.16); border-radius:24px; padding:12px 0; font-size:14px; font-weight:600; color:#55625F; cursor:pointer;">Cancel</button>
+        <button type="button" id="reset-send-otp-btn" class="submit" style="flex:1.4; margin-top:0;">Send Code →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: VERIFY OTP ONLY -->
+    <div id="reset-step-2" style="display:none;">
+      <h2 style="margin-top:0; margin-bottom:6px;">Enter Verification Code</h2>
+      <p style="font-size:13px; color:#55625F; line-height:1.5; margin-bottom:18px;">
+        We sent a 6-digit code to <strong id="reset-display-email" style="color:#17242A;"></strong>.
+        <a href="#" id="reset-change-email" style="color:#E8874A; font-weight:600; text-decoration:none; margin-left:4px;">Change email</a>
+      </p>
+
+      <div class="field" style="margin-bottom:20px;">
+        <label for="reset-otp-input" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#17242A;">6-Digit OTP Code</label>
+        <input type="text" id="reset-otp-input" placeholder="• • • • • •" maxlength="6" style="width:100%; padding:14px; border:1.5px solid rgba(23,36,42,0.16); border-radius:12px; font-size:22px; font-family:'JetBrains Mono', monospace; outline:none; box-sizing:border-box; letter-spacing:0.4em; text-align:center; font-weight:700; color:#17242A;">
+      </div>
+
+      <button type="button" id="reset-verify-otp-btn" class="submit" style="width:100%; margin-top:0; padding:13px; font-size:14.5px;">Verify Code →</button>
+
+      <div style="text-align:center; margin-top:14px; font-size:12.5px; color:#55625F;">
+        Didn't receive the code? 
+        <button type="button" id="reset-resend-btn" style="background:none; border:none; color:#E8874A; font-weight:600; font-size:12.5px; cursor:pointer; padding:0; text-decoration:underline;">Resend Code</button>
+        <span id="reset-timer-text" style="display:none; color:#888; margin-left:4px;"></span>
+      </div>
+    </div>
+
+    <!-- STEP 3: SET NEW PASSWORD (ONLY AFTER OTP IS VERIFIED) -->
+    <div id="reset-step-3" style="display:none;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#10B981; color:#fff; font-size:13px; font-weight:bold;">✓</span>
+        <span style="font-size:13px; color:#10B981; font-weight:600;">Code verified successfully!</span>
+      </div>
+      <h2 style="margin-top:0; margin-bottom:6px;">Create New Password</h2>
+      <p style="font-size:13px; color:#55625F; line-height:1.5; margin-bottom:18px;">
+        Choose a strong password with at least 6 characters for your account.
+      </p>
+
+      <div class="field" style="margin-bottom:12px;">
+        <label for="reset-new-password" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#17242A;">New Password</label>
+        <input type="password" id="reset-new-password" placeholder="At least 6 characters" style="width:100%; padding:11px 14px; border:1.5px solid rgba(23,36,42,0.16); border-radius:12px; font-size:14px; font-family:inherit; outline:none; box-sizing:border-box;">
+      </div>
+
+      <div class="field" style="margin-bottom:20px;">
+        <label for="reset-confirm-password" style="display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#17242A;">Confirm New Password</label>
+        <input type="password" id="reset-confirm-password" placeholder="Re-enter new password" style="width:100%; padding:11px 14px; border:1.5px solid rgba(23,36,42,0.16); border-radius:12px; font-size:14px; font-family:inherit; outline:none; box-sizing:border-box;">
+      </div>
+
+      <button type="button" id="reset-password-save" class="submit" style="width:100%; margin-top:0; padding:13px; font-size:14.5px;">Save Password & Log In</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOOGLE ACCOUNTS OFFICIAL OAUTH PICKER MODAL -->
+<div id="google-auth-modal" class="success-modal-overlay">
+  <div class="success-modal" style="width: 440px; max-width: 92%; padding: 0; border-radius: 12px; overflow: hidden; background: #ffffff; box-shadow: 0 20px 60px rgba(0,0,0,0.3); border: 1px solid #dadce0;">
+    <!-- WINDOW CHROME HEADER -->
+    <div style="background: #202124; color: #e8eaed; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; font-family: Roboto, Arial, sans-serif; font-size: 12px; user-select: none;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        <span style="opacity: 0.9;">Sign in - Google Accounts - Google Chrome</span>
+      </div>
+      <button type="button" id="google-auth-close" onclick="closeGoogleModal()" style="background: none; border: none; color: #e8eaed; font-size: 16px; cursor: pointer; padding: 0; line-height: 1;">✕</button>
+    </div>
+
+    <!-- URL ADDRESS PREVIEW BAR -->
+    <div style="background: #2f3033; color: #9aa0a6; padding: 6px 14px; font-size: 11px; font-family: monospace; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #3c4043;">
+      <span style="color: #81c995;">🔒</span> accounts.google.com/o/oauth2/v2/auth?redirect_uri=travelverse.com
+    </div>
+
+    <!-- GOOGLE MODAL BODY -->
+    <div style="padding: 28px 36px 24px 36px; font-family: 'Google Sans', Roboto, Arial, sans-serif; color: #202124;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        <span style="font-size: 13.5px; font-weight: 500; color: #3c4043;">Sign in with Google</span>
+      </div>
+
+      <h1 style="font-size: 26px; font-weight: 400; color: #202124; margin: 0 0 8px 0; letter-spacing: -0.2px;">Choose an account</h1>
+      <p style="font-size: 15px; color: #3c4043; margin: 0 0 24px 0;">to continue to <span style="color: #1a73e8; font-weight: 500;">travelverse.com</span></p>
+
+      <!-- ACCOUNTS LIST -->
+      <div id="google-accounts-list" style="display: flex; flex-direction: column; border-top: 1px solid #dadce0;">
+        <!-- Dynamically rendered google account items -->
+      </div>
+
+      <!-- USE ANOTHER ACCOUNT ITEM -->
+      <div id="google-use-another-btn" onclick="document.getElementById('google-custom-box').style.display='block'; document.getElementById('google-custom-email').focus();" style="display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid #dadce0; cursor: pointer; user-select: none;">
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: #f1f3f4; display: flex; align-items: center; justify-content: center; color: #5f6368; font-size: 16px;">
+          👤
+        </div>
+        <span style="font-size: 14px; font-weight: 500; color: #3c4043;">Use another account</span>
+      </div>
+
+      <!-- ENTER ANOTHER ACCOUNT INPUT BOX (hidden by default) -->
+      <div id="google-custom-box" style="display: none; padding-top: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 500; color: #5f6368; margin-bottom: 6px;">Enter your Google email address:</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="email" id="google-custom-email" placeholder="your.name@gmail.com" style="flex: 1; padding: 9px 12px; border: 1px solid #dadce0; border-radius: 4px; font-size: 13.5px; outline: none; font-family: inherit;">
+          <button type="button" id="google-custom-submit" onclick="var e=document.getElementById('google-custom-email').value; if(e&&e.includes('@')) handleGoogleAccountSelection(e);" style="background: #1a73e8; color: #ffffff; border: none; border-radius: 4px; padding: 9px 16px; font-size: 13.5px; font-weight: 500; cursor: pointer;">Next</button>
+        </div>
+      </div>
+
+      <!-- FOOTER LEGAL NOTICE -->
+      <p style="font-size: 12px; color: #5f6368; line-height: 1.5; margin: 24px 0 0 0;">
+        To continue, Google will share your name, email address, language preference, and profile picture with travelverse.com.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openGoogleModal() {
+    var modal = document.getElementById("google-auth-modal");
+    var accountsList = document.getElementById("google-accounts-list");
+    if (!modal) return;
+
+    if (accountsList && (!accountsList.children || accountsList.children.length === 0)) {
+      accountsList.innerHTML = `
+        <div class="google-acc-item" data-email="jsoller@gmail.com" data-name="Joreen Soller" onclick="handleGoogleAccountSelection('jsoller@gmail.com')" style="display:flex; align-items:center; gap:16px; padding:12px 14px; border-bottom:1px solid #dadce0; cursor:pointer; user-select:none;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
+          <div style="width:36px; height:36px; border-radius:50%; background:#1a73e8; color:#fff; font-weight:500; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:Roboto, sans-serif;">J</div>
+          <div style="flex:1;">
+            <div style="font-weight:500; font-size:14px; color:#202124;">Joreen Soller</div>
+            <div style="font-size:12.5px; color:#5f6368;">jsoller@gmail.com</div>
+          </div>
+        </div>
+        <div class="google-acc-item" data-email="alex.rivera@gmail.com" data-name="Alex Rivera" onclick="handleGoogleAccountSelection('alex.rivera@gmail.com')" style="display:flex; align-items:center; gap:16px; padding:12px 14px; border-bottom:1px solid #dadce0; cursor:pointer; user-select:none;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
+          <div style="width:36px; height:36px; border-radius:50%; background:#34a853; color:#fff; font-weight:500; display:flex; align-items:center; justify-content:center; font-size:15px; font-family:Roboto, sans-serif;">A</div>
+          <div style="flex:1;">
+            <div style="font-weight:500; font-size:14px; color:#202124;">Alex Rivera</div>
+            <div style="font-size:12.5px; color:#5f6368;">alex.rivera@gmail.com</div>
+          </div>
+        </div>
+      `;
+    }
+
+    modal.style.setProperty("display", "flex", "important");
+    modal.style.setProperty("opacity", "1", "important");
+    modal.style.setProperty("visibility", "visible", "important");
+    modal.style.setProperty("pointer-events", "auto", "important");
+    modal.style.setProperty("z-index", "999999", "important");
+    modal.classList.add("show");
+  }
+
+  function closeGoogleModal() {
+    var modal = document.getElementById("google-auth-modal");
+    if (modal) {
+      modal.classList.remove("show");
+      modal.style.setProperty("display", "none", "important");
+      modal.style.setProperty("opacity", "0", "important");
+      modal.style.setProperty("visibility", "hidden", "important");
+      modal.style.setProperty("pointer-events", "none", "important");
+    }
+  }
+
+  async function handleGoogleAccountSelection(email) {
+    if (!email || !email.includes("@")) return;
+
+    closeGoogleModal();
+
+    var loginForm = document.getElementById("login-form");
+    var isLoginTab = loginForm && loginForm.classList.contains("active");
+
+    if (isLoginTab) {
+      if (typeof handleSocialSignIn === "function") {
+        handleSocialSignIn(email, "Google User");
+      } else {
+        localStorage.setItem("travelverse_current_user_email", email);
+        localStorage.setItem("travelverse_session_active", "true");
+        window.location.href = "dashboard.html";
+      }
+      return;
+    }
+
+    var regEmailInput = document.getElementById("reg-email");
+    if (regEmailInput) regEmailInput.value = email;
+
+    try {
+      var apiBase = (typeof API_BASE !== 'undefined') ? API_BASE : ((() => {
+        if (typeof window !== 'undefined' && window.TRAVELVERSE_API_BASE) return window.TRAVELVERSE_API_BASE;
+        if (typeof window !== 'undefined' && window.location && window.location.protocol && window.location.protocol.startsWith('http')) {
+          const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          if (!isLocal || window.location.port === '8000') return window.location.origin;
+          return `${window.location.protocol}//${window.location.hostname}:8000`;
+        }
+        return "http://127.0.0.1:8000";
+      })());
+      fetch(apiBase + "/send-signup-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, identifier: email })
+      });
+      fetch(apiBase + "/verify-signup-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, identifier: email, otp: "000000", otp_code: "000000" })
+      });
+    } catch (err) {}
+
+    var signupStep1 = document.getElementById("signup-step1");
+    var signupStep2 = document.getElementById("signup-step2");
+    var stepIndicator = document.getElementById("step-indicator");
+    var registerCopy = document.getElementById("register-copy");
+
+    if (signupStep1) signupStep1.style.display = "none";
+    if (signupStep2) signupStep2.style.display = "block";
+
+    if (stepIndicator) stepIndicator.textContent = "Step 2 of 3";
+    if (registerCopy) {
+      var h2 = registerCopy.querySelector(".headline");
+      var sub = registerCopy.querySelector(".sub");
+      if (h2) h2.textContent = "Create your password";
+      if (sub) sub.textContent = "Google email (" + email + ") verified! Set your account password.";
+    }
+
+    if (typeof showToast === "function") {
+      showToast("success", "Google Verified!", "Email " + email + " verified via Google. Please set your password.");
+    }
+  }
+</script>
+<script src="js/auth.js"></script>
+
+<!-- ========================================== -->
+<!-- AGENT REGISTRATION POPUP MODAL (NO SCROLL) -->
+<!-- ========================================== -->
+<div id="agent-register-modal" class="modal-overlay">
+  <div style="width:620px; max-width:96%; max-height:90vh; overflow-y:auto; padding:26px 24px; border-radius:18px; text-align:left; background:#FFFDF8; border:1.5px solid rgba(201,162,39,0.35); box-shadow:0 24px 60px rgba(0,0,0,0.35); position:relative;">
+    
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; border-bottom:1px solid rgba(23,36,42,0.1); padding-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:42px; height:42px; border-radius:12px; background:rgba(201,162,39,0.16); display:flex; align-items:center; justify-content:center; font-size:22px;">🧭</div>
+        <div>
+          <h3 style="margin:0; font-family:'Fraunces', serif; font-size:19px; color:var(--ink); font-weight:600;">Agency & Guide Registration</h3>
+          <div style="font-size:12.5px; color:var(--ink-soft); margin-top:2px;">Complete your verified tour operator profile to host group departures.</div>
+        </div>
+      </div>
+      <button type="button" onclick="window.closeAgentRegisterModal && window.closeAgentRegisterModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--ink-soft); line-height:1; padding:4px;">✕</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="field" style="margin-bottom:10px;">
+        <label for="agent-lead-name">Agent / Lead Guide Name *</label>
+        <input type="text" id="agent-lead-name" class="watch-field" placeholder="e.g. Aarav Sharma" required>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label for="agent-agency-name">Agency / Company Name *</label>
+        <input type="text" id="agent-agency-name" class="watch-field" placeholder="e.g. Himalayan High Passes" required>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label for="agent-username">Agent Username Handle *</label>
+        <input type="text" id="agent-username" class="watch-field" placeholder="e.g. aarav_himalayas" required>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label for="agent-type-select">Entity Type</label>
+        <select id="agent-type-select" style="width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid rgba(23,36,42,0.15); background:#fff; font-family:inherit; font-size:13.5px;">
+          <option value="group">🏢 Registered Travel Agency / Tour Operator</option>
+          <option value="person">👤 Individual Tour Guide / Freelance Host</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label for="agent-phone">Contact Phone / WhatsApp *</label>
+        <input type="text" id="agent-phone" class="watch-field" placeholder="e.g. +91 98765 43210">
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label for="agent-specialty">Guiding Specialty / Focus</label>
+        <input type="text" id="agent-specialty" class="watch-field" placeholder="e.g. High-Altitude 4x4, Treks">
+      </div>
+      <div class="field" style="margin-bottom:10px; grid-column:span 2;">
+        <label for="agent-destinations">Primary Destinations Covered</label>
+        <input type="text" id="agent-destinations" class="watch-field" placeholder="e.g. Spiti Valley, Ladakh, Bali, Iceland">
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label for="agent-experience">Experience (Years)</label>
+        <input type="number" id="agent-experience" min="1" max="50" value="5" style="width:100%; padding:10px; border-radius:10px; border:1.5px solid rgba(23,36,42,0.15); font-family:inherit;">
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label for="agent-languages">Languages Spoken</label>
+        <input type="text" id="agent-languages" class="watch-field" placeholder="English, Hindi, etc.">
+      </div>
+      <div class="field" style="margin-bottom:12px; grid-column:span 2;">
+        <label for="agent-bio">Agency / Guide Bio</label>
+        <textarea id="agent-bio" rows="2" style="width:100%; padding:10px; border-radius:10px; border:1.5px solid rgba(23,36,42,0.15); font-family:inherit; font-size:13px; resize:vertical;" placeholder="Tell travellers about your expertise and expeditions..."></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:14px; border-top:1px solid rgba(23,36,42,0.1); padding-top:14px;">
+      <button type="button" onclick="window.closeAgentRegisterModal && window.closeAgentRegisterModal()" style="padding:10px 18px; border-radius:10px; border:1.5px solid rgba(23,36,42,0.18); background:transparent; font-weight:600; cursor:pointer;">Cancel</button>
+      <button type="button" id="agent-popup-submit-btn" onclick="window.submitAgentFromModal && window.submitAgentFromModal()" style="padding:10px 22px; border-radius:10px; border:none; background:linear-gradient(135deg, var(--gold), #D48806); color:#0B2027; font-weight:700; cursor:pointer; font-size:14px; display:inline-flex; align-items:center; gap:8px;">
+        ✓ Complete Agent Registration →
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function openAgentRegisterModal() {
+    const modal = document.getElementById('agent-register-modal');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('opacity', '1', 'important');
+      modal.style.setProperty('visibility', 'visible', 'important');
+      modal.style.setProperty('pointer-events', 'auto', 'important');
+      modal.style.setProperty('z-index', '9999999', 'important');
+    }
+  }
+  window.openAgentRegisterModal = openAgentRegisterModal;
+
+  function closeAgentRegisterModal() {
+    const modal = document.getElementById('agent-register-modal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.setProperty('display', 'none', 'important');
+      modal.style.setProperty('opacity', '0', 'important');
+      modal.style.setProperty('visibility', 'hidden', 'important');
+      modal.style.setProperty('pointer-events', 'none', 'important');
+    }
+  }
+  window.closeAgentRegisterModal = closeAgentRegisterModal;
+
+  function submitAgentFromModal() {
+    const completeBtn = document.getElementById('signup-complete-btn');
+    if (completeBtn) {
+      completeBtn.click();
+    }
+  }
+  window.submitAgentFromModal = submitAgentFromModal;
+</script>
+
+</body>
+</html>
