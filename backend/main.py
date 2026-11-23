@@ -3616,20 +3616,28 @@ def send_trip_message(req: SendTripMessageRequest):
     
     trip_title = (trip.get("title") if trip else None) or req.trip_title or "Group Trip"
     
-    role = (req.sender_role or "").strip().lower()
-    if role in ["agent", "host", "admin"]:
-        role = "admin"
+    role = "traveller"
     if trip:
         agent_email = (trip.get("agent_email") or "").strip().lower()
         t_aid = str(trip.get("agent_id") or "")
-        agent_doc = db.agents.find_one({"$or": [
-            {"email": {"$regex": f"^{re.escape(sender_email)}$", "$options": "i"}},
-            {"id": int(t_aid) if t_aid.isdigit() else -1}
-        ]})
-        if sender_email == agent_email or (agent_doc and (str(agent_doc.get("id")) == t_aid or (agent_doc.get("email") or "").lower() == sender_email)):
+        is_host = False
+        if sender_email and sender_email == agent_email:
+            is_host = True
+        elif sender_email:
+            agent_doc = db.agents.find_one({"email": {"$regex": f"^{re.escape(sender_email)}$", "$options": "i"}})
+            if agent_doc and (str(agent_doc.get("id")) == t_aid or (agent_doc.get("email") or "").strip().lower() == agent_email):
+                is_host = True
+        
+        if is_host:
             role = "admin"
-    if not role:
-        role = "traveller"
+        else:
+            role = "traveller"
+    else:
+        req_role = (req.sender_role or "").strip().lower()
+        if req_role in ["agent", "host", "admin"]:
+            role = "admin"
+        else:
+            role = "traveller"
 
     doc = {
         "id": msg_id,

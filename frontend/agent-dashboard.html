@@ -4694,14 +4694,15 @@
           </div>
         ` + msgs.map(m => {
           const senderEmail = (m.sender_email || '').toLowerCase().trim();
-          const isMe = senderEmail === currentAgentEmail.toLowerCase() || (m.sender_role === 'agent');
+          const isMe = senderEmail === currentAgentEmail.toLowerCase();
+          const isHostSender = isMe || (m.sender_role === 'agent' && senderEmail === currentAgentEmail.toLowerCase());
           const timeDisp = m.time_str || (m.created_at ? (m.created_at.includes('T') ? m.created_at.split('T')[1].slice(0, 5) : m.created_at.slice(0, 5)) : '');
 
           return `
             <div class="trip-chat-row ${isMe ? 'me' : 'them'}">
               <span class="trip-chat-sender-name">
-                ${isMe ? 'You (Host)' : (m.sender_name || m.sender_email || 'Traveller')}
-                ${!isMe ? '<span style="font-size:10px; font-weight:normal; background:rgba(0,0,0,0.05); padding:1px 5px; border-radius:3px; margin-left:4px;">Guest</span>' : ''}
+                ${isMe ? 'You (Host)' : (escapeQuotes(m.sender_name || m.sender_email || 'Guest'))}
+                ${!isMe ? (isHostSender ? '<span style="font-size:10px; font-weight:700; background:#E8874A; color:#fff; padding:1px 5px; border-radius:3px; margin-left:4px;">Host</span>' : '<span style="font-size:10px; font-weight:normal; background:rgba(0,0,0,0.05); padding:1px 5px; border-radius:3px; margin-left:4px;">Guest</span>') : ''}
               </span>
               <div class="trip-chat-bubble">
                 <div>${escapeQuotes(m.message_text || '')}</div>

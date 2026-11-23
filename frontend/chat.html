@@ -2848,16 +2848,17 @@
 
       const sEmail = (m.sender_email || '').toLowerCase().trim();
       const isMe = sEmail === myEmail;
-      const isAdmin = (m.sender_role === 'admin' || m.sender_role === 'agent' || sEmail === (activeTripGroup.agent_email || '').toLowerCase());
+      const tripHostEmail = (activeTripGroup.agent_email || activeTripGroup.host_email || '').toLowerCase().trim();
+      const isHostMsg = Boolean(tripHostEmail && sEmail === tripHostEmail);
       const timeStr = m.time_str || (m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now');
       const tickHtml = isMe ? getWhatsAppTickHtml(m, user.email) : '';
 
       let senderTagHtml = '';
       if (!isMe) {
-        if (isAdmin) {
+        if (isHostMsg) {
           senderTagHtml = `
             <div style="display:flex; align-items:center; gap:5px; margin-bottom:4px;">
-              <span style="font-size:12px; font-weight:700; color:#c45e1e;">${escapeHtml(m.sender_name || activeTripGroup.agent_name)}</span>
+              <span style="font-size:12px; font-weight:700; color:#c45e1e;">${escapeHtml(m.sender_name || activeTripGroup.agent_name || 'Trip Host')}</span>
               <span style="background:linear-gradient(135deg, #E8874A, #D6555A); color:#fff; font-size:9.5px; font-weight:700; padding:1px 6px; border-radius:8px;">Host / Admin</span>
             </div>
           `;
@@ -2869,12 +2870,21 @@
             </div>
           `;
         }
-      } else if (isAdmin) {
-        senderTagHtml = `
-          <div style="font-size:10.5px; font-weight:700; color:var(--gold); margin-bottom:3px; display:flex; align-items:center; gap:4px;">
-            You (Trip Host & Admin)
-          </div>
-        `;
+      } else {
+        if (isHostMsg) {
+          senderTagHtml = `
+            <div style="font-size:10.5px; font-weight:700; color:var(--gold); margin-bottom:3px; display:flex; align-items:center; gap:4px;">
+              You (Trip Host & Admin)
+            </div>
+          `;
+        } else {
+          const myDisplayName = user.name || user.username || (m.sender_name) || (user.email ? user.email.split('@')[0] : 'You');
+          senderTagHtml = `
+            <div style="font-size:10.5px; font-weight:700; color:var(--teal, #165b52); margin-bottom:3px; display:flex; align-items:center; gap:4px;">
+              You (${escapeHtml(myDisplayName)})
+            </div>
+          `;
+        }
       }
 
       const announcementHtml = m.is_announcement ? `
@@ -3314,9 +3324,10 @@
     if (activeChatMode === 'trip' && activeTripGroup) {
       input.value = '';
       const tripId = activeTripGroup.trip_id;
-      const isMeAdmin = user.email.toLowerCase() === (activeTripGroup.agent_email || '').toLowerCase() || activeTripGroup.is_admin;
+      const tripHostEmail = (activeTripGroup.agent_email || activeTripGroup.host_email || '').toLowerCase().trim();
+      const isMeAdmin = Boolean(tripHostEmail && user.email.toLowerCase() === tripHostEmail);
       const senderRole = isMeAdmin ? 'admin' : 'traveller';
-      const senderName = user.name || user.username || (isMeAdmin ? activeTripGroup.agent_name : user.email.split('@')[0]);
+      const senderName = user.name || user.username || (isMeAdmin ? (activeTripGroup.agent_name || 'Host') : (user.email ? user.email.split('@')[0] : 'Traveler'));
 
       const tempId = 'temp_' + Date.now();
       const tempMsg = {
