@@ -2406,7 +2406,8 @@
     // A. TRIP GROUP CHAT
     if (activeChatMode === 'trip' && activeTripGroup) {
       const trip = activeTripGroup;
-      const isAdminMe = trip.is_admin;
+      const tripHostEmail = (trip.agent_email || trip.host_email || '').toLowerCase().trim();
+      const isAdminMe = Boolean(tripHostEmail && user.email && user.email.toLowerCase() === tripHostEmail);
 
       mainPane.innerHTML = `
         <div class="chat-header">
@@ -2896,7 +2897,7 @@
       htmlParts.push(`
         <div class="message-row ${isMe ? 'me' : 'buddy'}" data-msg-id="${m.id}">
           <div class="msg-bubble-wrap">
-            <div class="chat-bubble ${isAdmin && !isMe ? 'admin-bubble' : ''}" oncontextmenu="event.preventDefault(); openDeleteDialog(event, '${m.id}', ${isMe})">
+            <div class="chat-bubble ${isHostMsg && !isMe ? 'admin-bubble' : ''}" oncontextmenu="event.preventDefault(); openDeleteDialog(event, '${m.id}', ${isMe})">
               ${senderTagHtml}
               ${announcementHtml}
               <span class="msg-text-content">${escapeHtml(m.message_text)}</span>
